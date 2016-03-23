@@ -8,6 +8,10 @@
   },
   "author": "Wilhelm Matilainen",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wilhelmmatilainen/wilu.git"
+  },
   "dependencies": {
     "debug": "^2.2.0",
     "glob": "^7.0.3",
