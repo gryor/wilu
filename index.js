@@ -163,6 +163,9 @@ function suffix(set, text) {
 
 async function makefile(info) {
 	try {
+		if(!pkg.build)
+			return;
+
 		targets(pkg);
 		await sources(pkg);
 

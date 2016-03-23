@@ -344,11 +344,20 @@ function makefile(info) {
 			case 0:
 				context$1$0.prev = 0;
 
+				if (pkg.build) {
+					context$1$0.next = 3;
+					break;
+				}
+
+				return context$1$0.abrupt('return');
+
+			case 3:
+
 				targets(pkg);
-				context$1$0.next = 4;
+				context$1$0.next = 6;
 				return regeneratorRuntime.awrap(sources(pkg));
 
-			case 4:
+			case 6:
 				out = [];
 				outdirs = new Set();
 
@@ -438,16 +447,16 @@ function makefile(info) {
 
 				return context$1$0.abrupt('return', out.join('\n\n') + '\n');
 
-			case 11:
-				context$1$0.prev = 11;
+			case 13:
+				context$1$0.prev = 13;
 				context$1$0.t0 = context$1$0['catch'](0);
 				throw context$1$0.t0;
 
-			case 14:
+			case 16:
 			case 'end':
 				return context$1$0.stop();
 		}
-	}, null, this, [[0, 11]]);
+	}, null, this, [[0, 13]]);
 }
 
 exports['default'] = makefile;
