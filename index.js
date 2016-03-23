@@ -87,7 +87,8 @@ function combine(parent, childs) {
 function targets(info) {
 	reduce(info.build);
 	combine(info.build);
-	info.build = info.build['+'];
+	if(info.build['+'])
+		info.build = info.build['+'];
 }
 
 function aglob(pattern, options) {
