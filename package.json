@@ -1,0 +1,16 @@
+{
+  "name": "wilu",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Wilhelm Matilainen",
+  "license": "ISC",
+  "dependencies": {
+    "debug": "^2.2.0",
+    "glob": "^7.0.3",
+    "minimatch": "^3.0.0"
+  }
+}
