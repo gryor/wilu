@@ -2,7 +2,6 @@ import debug from 'debug';
 import path from 'path';
 import glob from 'glob';
 import minimatch from 'minimatch';
-import * as pkg from './package.json';
 
 let log = debug('wilu');
 
@@ -85,6 +84,7 @@ function combine(parent, childs) {
 }
 
 function targets(info) {
+	log('targets');
 	reduce(info.build);
 	combine(info.build);
 	if(info.build['+'])
@@ -108,6 +108,7 @@ function aglob(pattern, options) {
 
 async function sources(info) {
 	try {
+		log('sources')
 		for(let name in info.build) {
 			let target = info.build[name];
 			target.sources = target.sources || {};
@@ -164,17 +165,19 @@ function suffix(set, text) {
 
 async function makefile(info) {
 	try {
-		if(!pkg.build)
-			return;
+		if(!info.build)
+			throw new Error('package.json:build is not defined');
 
-		targets(pkg);
-		await sources(pkg);
+		targets(info);
+		await sources(info);
+		log('generating makefile');
 
 		let out = [];
 		let outdirs = new Set();
 
 		for(let name in info.build) {
 			let target = info.build[name];
+			log({[name]: target});
 
 			target.name = target.name || 'app';
 			target.directory = target.directory || 'build';
@@ -240,6 +243,8 @@ async function makefile(info) {
 					target.compiler.flags[type] = prefix(target.compiler.flags[type], '-').join(' ');
 			}
 
+			log({[name]: target});
+
 			for(let type in src) {
 				let objects = suffix(src[type], '.o');
 				let compiler = target.toolset + target.compilers[type];
@@ -267,6 +272,7 @@ async function makefile(info) {
 
 				let mkdirs = [dirs + ':\n\t@mkdir -p ' + dirs];
 
+				// linker erikseen, kerää tiedot kaikista kielistä!
 				let link = [
 					name + ':',
 					dirs,
@@ -291,19 +297,13 @@ async function makefile(info) {
 
 		out.push('clean:\n\t-@rm -rf ' + [...outdirs].join(' '));
 
-		return out.join('\n\n') + '\n';
+		out = out.join('\n\n') + '\n';
+		log({out});
+
+		return out;
 	} catch(e) {
 		throw e;
 	}
 }
 
 export default makefile;
-
-(async function () {
-	try {
-		//log(await makefile(pkg));
-	} catch(e) {
-		console.error(e.stack);
-		throw e;
-	}
-})()

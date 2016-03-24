@@ -4,11 +4,11 @@ Object.defineProperty(exports, '__esModule', {
 	value: true
 });
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var _debug = require('debug');
 
@@ -25,10 +25,6 @@ var _glob2 = _interopRequireDefault(_glob);
 var _minimatch = require('minimatch');
 
 var _minimatch2 = _interopRequireDefault(_minimatch);
-
-var _packageJson = require('./package.json');
-
-var pkg = _interopRequireWildcard(_packageJson);
 
 var log = (0, _debug2['default'])('wilu');
 
@@ -107,6 +103,7 @@ function combine(parent, childs) {
 }
 
 function targets(info) {
+	log('targets');
 	reduce(info.build);
 	combine(info.build);
 	if (info.build['+']) info.build = info.build['+'];
@@ -133,6 +130,8 @@ function sources(info) {
 		while (1) switch (context$1$0.prev = context$1$0.next) {
 			case 0:
 				context$1$0.prev = 0;
+
+				log('sources');
 
 				_loop = function callee$1$0(_name3) {
 					var target, src, exclude, _loop2, type;
@@ -294,34 +293,34 @@ function sources(info) {
 
 				context$1$0.t0 = regeneratorRuntime.keys(info.build);
 
-			case 3:
+			case 4:
 				if ((context$1$0.t1 = context$1$0.t0()).done) {
-					context$1$0.next = 9;
+					context$1$0.next = 10;
 					break;
 				}
 
 				_name3 = context$1$0.t1.value;
-				context$1$0.next = 7;
+				context$1$0.next = 8;
 				return regeneratorRuntime.awrap(_loop(_name3));
 
-			case 7:
-				context$1$0.next = 3;
+			case 8:
+				context$1$0.next = 4;
 				break;
 
-			case 9:
-				context$1$0.next = 14;
+			case 10:
+				context$1$0.next = 15;
 				break;
 
-			case 11:
-				context$1$0.prev = 11;
+			case 12:
+				context$1$0.prev = 12;
 				context$1$0.t2 = context$1$0['catch'](0);
 				throw context$1$0.t2;
 
-			case 14:
+			case 15:
 			case 'end':
 				return context$1$0.stop();
 		}
-	}, null, this, [[0, 11]]);
+	}, null, this, [[0, 12]]);
 }
 
 function prefix(set, text) {
@@ -344,25 +343,29 @@ function makefile(info) {
 			case 0:
 				context$1$0.prev = 0;
 
-				if (pkg.build) {
+				if (info.build) {
 					context$1$0.next = 3;
 					break;
 				}
 
-				return context$1$0.abrupt('return');
+				throw new Error('package.json:build is not defined');
 
 			case 3:
 
-				targets(pkg);
+				targets(info);
 				context$1$0.next = 6;
-				return regeneratorRuntime.awrap(sources(pkg));
+				return regeneratorRuntime.awrap(sources(info));
 
 			case 6:
+				log('generating makefile');
+
 				out = [];
 				outdirs = new Set();
 
 				for (_name4 in info.build) {
 					target = info.build[_name4];
+
+					log(_defineProperty({}, _name4, target));
 
 					target.name = target.name || 'app';
 					target.directory = target.directory || 'build';
@@ -414,6 +417,8 @@ function makefile(info) {
 						if (isSet(target.compiler.flags[type])) target.compiler.flags[type] = prefix(target.compiler.flags[type], '-').join(' ');
 					}
 
+					log(_defineProperty({}, _name4, target));
+
 					for (type in src) {
 						objects = suffix(src[type], '.o');
 						compiler = target.toolset + target.compilers[type];
@@ -445,43 +450,22 @@ function makefile(info) {
 
 				out.push('clean:\n\t-@rm -rf ' + [].concat(_toConsumableArray(outdirs)).join(' '));
 
-				return context$1$0.abrupt('return', out.join('\n\n') + '\n');
+				out = out.join('\n\n') + '\n';
+				log({ out: out });
 
-			case 13:
-				context$1$0.prev = 13;
+				return context$1$0.abrupt('return', out);
+
+			case 16:
+				context$1$0.prev = 16;
 				context$1$0.t0 = context$1$0['catch'](0);
 				throw context$1$0.t0;
 
-			case 16:
+			case 19:
 			case 'end':
 				return context$1$0.stop();
 		}
-	}, null, this, [[0, 13]]);
+	}, null, this, [[0, 16]]);
 }
 
 exports['default'] = makefile;
-
-(function callee$0$0() {
-	return regeneratorRuntime.async(function callee$0$0$(context$1$0) {
-		while (1) switch (context$1$0.prev = context$1$0.next) {
-			case 0:
-				context$1$0.prev = 0;
-				context$1$0.next = 7;
-				break;
-
-			case 3:
-				context$1$0.prev = 3;
-				context$1$0.t0 = context$1$0['catch'](0);
-
-				console.error(context$1$0.t0.stack);
-				throw context$1$0.t0;
-
-			case 7:
-			case 'end':
-				return context$1$0.stop();
-		}
-	}, null, this, [[0, 3]]);
-})();
 module.exports = exports['default'];
-
-//log(await makefile(pkg));
