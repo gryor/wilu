@@ -128,11 +128,11 @@ async function sources(info) {
 					src.include.delete(exclude);
 				}
 
-				src.include = await Promise.all([...src.include].map((pattern) => aglob(pattern, {cwd: src.path, matchBase: true})));
+				src.include = await Promise.all([...src.include].map((pattern) => aglob(pattern, {cwd: src.path})));
 				src.include = src.include.reduce((all, current) => [...all, ...current]);
 
 				for(let exclude of src.exclude)
-					src.include = src.include.filter((include) => !minimatch(include, exclude, {matchBase: true}));
+					src.include = src.include.filter((include) => !minimatch(include, exclude));
 
 				src.include = src.include.map((include) => path.join(src.path, include));
 				src.include = [...new Set(src.include)];
