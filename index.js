@@ -14,12 +14,27 @@ function isSet(value) {
 	return Object.prototype.toString.call(value) === Object.prototype.toString.call(Set.prototype);
 }
 
+function parseObject(obj, iterating = false) {
+	try {
+		for(let property in obj) {
+		if(Array.isArray(obj[property])) {
+			obj[property] = new Set(obj[property]);
+		} else if(obj[property] === null) {
+			delete obj[property];
+		} else if(property === '+' && !iterating) {
+			continue;
+		} else if(isObject(obj[property])) {
+			obj[property] = parseObject(obj[property], true);
+		}
+	}
+	} catch (e) {
+		throw e;
+	}
+}
+
 function reduceObjects(parent, child, iterating = false) {
 	try {
 		for(let property in parent) {
-			if(Array.isArray(parent[property]))
-				parent[property] = new Set(parent[property]);
-
 			if(property === '+' && !iterating) {
 				continue;
 			} else if(child[property] === undefined) {
@@ -44,6 +59,7 @@ function reduceObjects(parent, child, iterating = false) {
 
 function reduce(parent) {
 	try {
+		parseObject(parent);
 		let childs = parent['+'];
 
 		for(let name in childs) {
@@ -84,7 +100,6 @@ function combine(parent, childs) {
 }
 
 function targets(info) {
-	log('targets');
 	reduce(info.build);
 	combine(info.build);
 	if(info.build['+'])
@@ -108,10 +123,9 @@ function aglob(pattern, options) {
 
 async function sources(info) {
 	try {
-		log('sources')
 		for(let name in info.build) {
 			let target = info.build[name];
-			target.sources = target.sources || {};
+			target.sources = target.sources || {};
 			let src = target.sources;
 			src.extensions = src.extensions || {c: new Set(['c']), 'c++': new Set(['cc', 'cpp']), asm: new Set(['s', 'S'])};
 
@@ -123,20 +137,30 @@ async function sources(info) {
 				delete src.subpath;
 			}
 
+			if(src.include === undefined)
+				src.include = new Set(['**/*.c']);
+
 			if(isSet(src.include) && src.path !== null) {
-				for(let exclude of src.exclude) {
-					src.include.delete(exclude);
+				if(isSet(src.exclude)) {
+					for(let exclude of src.exclude) {
+						src.include.delete(exclude);
+					}
 				}
 
 				src.include = await Promise.all([...src.include].map((pattern) => aglob(pattern, {cwd: src.path})));
 				src.include = src.include.reduce((all, current) => [...all, ...current]);
 
-				for(let exclude of src.exclude)
-					src.include = src.include.filter((include) => !minimatch(include, exclude));
+				if(isSet(src.exclude)) {
+					for(let exclude of src.exclude)
+						src.include = src.include.filter((include) => !minimatch(include, exclude));
+				}
 
 				src.include = src.include.map((include) => path.join(src.path, include));
 				src.include = [...new Set(src.include)];
 				src.path = null;
+
+				if(src.include.size === 0)
+					continue;
 
 				for(let type in src.extensions) {
 					src.extensions[type] = new Set([...src.extensions[type]]
@@ -146,9 +170,9 @@ async function sources(info) {
 												   if(src.extensions[type].size === 0)
 													   delete src.extensions[type];
 				}
-			}
 
-			target.sources = src.extensions;
+				target.sources = src.extensions;
+			}
 		}
 	} catch(e) {
 		throw e;
@@ -163,6 +187,74 @@ function suffix(set, text) {
 	return [...set].map((item) => item + text);
 }
 
+function initTarget(info, target) {
+	try {
+	target.name = target.name || info.name || 'app';
+	target.version = target.version || info.version || '0.0.1';
+	target.directory = target.directory || 'build';
+	target.objdirectory = target.objdirectory || 'obj';
+	target.subdirectory = target.subdirectory || 'bin';
+	target.compilers = target.compilers || {};
+	target.compiler = target.compiler || {};
+	target.compiler.flags = target.compiler.flags || {};
+	target.compiler.flags.always = target.compiler.flags.always || new Set();
+	target.machine = target.machine || new Set();
+	target.definitions = target.definitions || new Set();
+	target.linker = target.linker || {};
+	target.linker.flags = target.linker.flags || new Set();
+	target.linker.scripts = target.linker.scripts || new Set();
+	target.assembler = target.assembler || {};
+	target.assembler.flags = target.assembler.flags || new Set();
+	target.libraries = target.libraries || new Set();
+	target.search = target.search || {};
+	target.search.includes = target.search.includes || new Set();
+	target.search.libraries = target.search.libraries || new Set();
+	target.search.scripts = target.search.scripts || new Set();
+	target.objdirectory = path.join(target.directory, target.objdirectory);
+	target.subdirectory = path.join(target.directory, target.subdirectory);
+
+	if(target.toolset && target.toolset.length)
+		target.toolset += '-';
+	else
+		target.toolset = '';
+
+	if(target.compilers.c === undefined)
+		target.compilers.c = 'gcc';
+
+	if(target.compilers['c++'] === undefined)
+		target.compilers['c++'] = 'g++';
+
+	if(target.compilers.asm === undefined)
+		target.compilers.asm = 'gcc -x --assembler-with-cpp';
+
+	if(isSet(target.machine))
+		target.machine = prefix(target.machine, '-m').join(' ');
+	if(isSet(target.definitions))
+		target.definitions = prefix(target.definitions, '-D').join(' ');
+	if(isSet(target.linker.flags))
+		target.linker.flags = prefix(target.linker.flags, '-Wl,-').join(' ');
+	if(isSet(target.linker.scripts))
+		target.linker.scripts = prefix(target.linker.scripts, '-T').join(' ');
+	if(isSet(target.assembler.flags))
+		target.assembler.flags = prefix(target.assembler.flags, '-Wa,-').join(' ');
+	if(isSet(target.libraries))
+		target.libraries = prefix(target.libraries, '-l').join(' ');
+	if(isSet(target.search.includes))
+		target.search.includes = prefix(target.search.includes, '-I').join(' ');
+	if(isSet(target.search.libraries))
+		target.search.libraries = prefix(target.search.libraries, '-L').join(' ');
+	if(isSet(target.search.scripts))
+		target.search.scripts = prefix(target.search.scripts, '-Wl,-L').join(' ');
+
+	for(let type in target.compiler.flags) {
+		if(isSet(target.compiler.flags[type]))
+			target.compiler.flags[type] = prefix(target.compiler.flags[type], '-').join(' ');
+	}
+	} catch (e) {
+		throw e;
+	}
+}
+
 async function makefile(info) {
 	try {
 		if(!info.build)
@@ -170,85 +262,24 @@ async function makefile(info) {
 
 		targets(info);
 		await sources(info);
-		log('generating makefile');
 
 		let out = [];
 		let outdirs = new Set();
 
 		for(let name in info.build) {
 			let target = info.build[name];
-			log({[name]: target});
 
-			target.name = target.name || 'app';
-			target.directory = target.directory || 'build';
-			target.objdirectory = target.objdirectory || 'obj';
-			target.subdirectory = target.subdirectory || 'bin';
-			target.compilers = target.compilers || {};
-			target.compiler = target.compiler || {};
-			target.compiler.flags = target.compiler.flags || {};
-			target.compiler.flags.always = target.compiler.flags.always || new Set();
-			target.machine = target.machine || new Set();
-			target.definitions = target.definitions || new Set();
-			target.linker = target.linker || {};
-			target.linker.flags = target.linker.flags || new Set();
-			target.linker.scripts = target.linker.scripts || new Set();
-			target.assembler = target.assembler || {};
-			target.assembler.flags = target.assembler.flags || new Set();
-			target.libraries = target.libraries || new Set();
-			target.search = target.search || {};
-			target.search.includes = target.search.includes || new Set();
-			target.search.libraries = target.search.libraries || new Set();
-			target.search.scripts = target.search.scripts || new Set();
+			initTarget(info, target);
 
 			let compilers = target.compilers;
+			let linker = target.toolset + (target.sources['c++'] ? target.compilers['c++'] : target.compilers['c']);
 			let src = target.sources;
-
-			outdirs.add(target.directory);
-			target.objdirectory = path.join(target.directory, target.objdirectory);
-			target.subdirectory = path.join(target.directory, target.subdirectory);
-
-			if(target.toolset && target.toolset.length)
-				target.toolset += '-';
-
-			if(compilers.c === undefined)
-				compilers.c = 'gcc';
-
-			if(compilers['c++'] === undefined)
-				compilers['c++'] = 'g++';
-
-			if(compilers.asm === undefined)
-				compilers.asm = 'gcc -x --assembler-with-cpp';
-
-			if(isSet(target.machine))
-				target.machine = prefix(target.machine, '-m').join(' ');
-			if(isSet(target.definitions))
-				target.definitions = prefix(target.definitions, '-D').join(' ');
-			if(isSet(target.linker.flags))
-				target.linker.flags = prefix(target.linker.flags, '-Wl,-').join(' ');
-			if(isSet(target.linker.scripts))
-				target.linker.scripts = prefix(target.linker.scripts, '-T').join(' ');
-			if(isSet(target.assembler.flags))
-				target.assembler.flags = prefix(target.assembler.flags, '-Wa,-').join(' ');
-			if(isSet(target.libraries))
-				target.libraries = prefix(target.libraries, '-l').join(' ');
-			if(isSet(target.search.includes))
-				target.search.includes = prefix(target.search.includes, '-I').join(' ');
-			if(isSet(target.search.libraries))
-				target.search.libraries = prefix(target.search.libraries, '-L').join(' ');
-			if(isSet(target.search.scripts))
-				target.search.scripts = prefix(target.search.scripts, '-Wl,-L').join(' ');
-
-			for(let type in target.compiler.flags) {
-				if(isSet(target.compiler.flags[type]))
-					target.compiler.flags[type] = prefix(target.compiler.flags[type], '-').join(' ');
-			}
-
-			log({[name]: target});
+			let targetObjects = [];
 
 			for(let type in src) {
 				let objects = suffix(src[type], '.o');
+				targetObjects = targetObjects.concat(objects);
 				let compiler = target.toolset + target.compilers[type];
-				let linker = target.toolset + (target.sources['c++'] ? target.compilers['c++'] : target.compilers['c']);
 				let flags = target.compiler.flags.always;
 
 				if(target.compiler.flags[type])
@@ -266,17 +297,25 @@ async function makefile(info) {
 				];
 
 				compile = compile.filter((e) => !(!e || e.length === 0)).join(' ');
+				out.push(compile);
+			}
 
-				let builtObjects = prefix(objects, path.join(target.objdirectory, name) + path.sep);
+			if(targetObjects.length === 0)
+				continue;
+
+				targetObjects = [...new Set(targetObjects)];
+
+				outdirs.add(target.directory);
+
+				let builtObjects = prefix(targetObjects, path.join(target.objdirectory, name) + path.sep);
 				let dirs = [target.subdirectory, ...new Set(builtObjects.map((o) => path.dirname(o)))].join(' ');
-
 				let mkdirs = [dirs + ':\n\t@mkdir -p ' + dirs];
 
 				// linker erikseen, kerää tiedot kaikista kielistä!
 				let link = [
 					name + ':',
 					dirs,
-					objects.join(' ') + '\n\t@' + linker,
+					targetObjects.join(' ') + '\n\t@' + linker,
 					target.linker.flags,
 					target.linker.scripts,
 					target.machine,
@@ -290,15 +329,17 @@ async function makefile(info) {
 				];
 
 				link = link.filter((e) => !(!e || e.length === 0)).join(' ');
-
-				out.push(mkdirs, compile, link);
-			}
+				out.push(mkdirs, link);
 		}
 
-		out.push('clean:\n\t-@rm -rf ' + [...outdirs].join(' '));
+		if(outdirs.size)
+			out.push('clean:\n\t-@rm -rf ' + [...outdirs].join(' '));
 
-		out = out.join('\n\n') + '\n';
-		log({out});
+		out = out.filter((e) => !(!e || e.length === 0));
+		out = out.join('\n\n');
+
+		if(out.length)
+			out += '\n';
 
 		return out;
 	} catch(e) {
@@ -307,3 +348,14 @@ async function makefile(info) {
 }
 
 export default makefile;
+
+if(require.main === module) {
+(async function () {
+	try {
+		log('makefile', '\n' + await makefile(require('./package.json')));
+	} catch (e) {
+			log(e);
+			throw e;
+	}
+})();
+}
