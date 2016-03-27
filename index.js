@@ -14,17 +14,15 @@ function isSet(value) {
 	return Object.prototype.toString.call(value) === Object.prototype.toString.call(Set.prototype);
 }
 
-function parseObject(obj, iterating = false) {
+function parseObject(obj) {
 	try {
 		for(let property in obj) {
 		if(Array.isArray(obj[property])) {
 			obj[property] = new Set(obj[property]);
 		} else if(obj[property] === null) {
 			delete obj[property];
-		} else if(property === '+' && !iterating) {
-			continue;
 		} else if(isObject(obj[property])) {
-			obj[property] = parseObject(obj[property], true);
+			parseObject(obj[property]);
 		}
 	}
 	} catch (e) {
@@ -39,18 +37,11 @@ function reduceObjects(parent, child, iterating = false) {
 				continue;
 			} else if(child[property] === undefined) {
 				child[property] = parent[property];
-			} else if(child[property] === null) {
-				delete child[property];
-			} else if(isSet(parent[property]) && Array.isArray(child[property])) {
-				child[property] = new Set([...parent[property], ...child[property]]);
+			} else if(Array.isArray(parent[property]) && Array.isArray(child[property])) {
+				child[property] = [...parent[property], ...child[property]];
 			} else if(isObject(parent[property]) && isObject(child[property])) {
 				reduceObjects(parent[property], child[property], true);
 			}
-		}
-
-		for(let property in child) {
-			if(Array.isArray(child[property]))
-				child[property] = new Set(child[property]);
 		}
 	} catch (e) {
 		throw e;
@@ -59,7 +50,6 @@ function reduceObjects(parent, child, iterating = false) {
 
 function reduce(parent) {
 	try {
-		parseObject(parent);
 		let childs = parent['+'];
 
 		for(let name in childs) {
@@ -102,8 +92,14 @@ function combine(parent, childs) {
 function targets(info) {
 	reduce(info.build);
 	combine(info.build);
-	if(info.build['+'])
+
+	if(info.build['+']) {
 		info.build = info.build['+'];
+
+		for (let target in info.build) {
+				parseObject(info.build[target]);
+		}
+	}
 }
 
 function aglob(pattern, options) {
@@ -125,9 +121,15 @@ async function sources(info) {
 	try {
 		for(let name in info.build) {
 			let target = info.build[name];
+
 			target.sources = target.sources || {};
 			let src = target.sources;
-			src.extensions = src.extensions || {c: new Set(['c']), 'c++': new Set(['cc', 'cpp']), asm: new Set(['s', 'S'])};
+			src.extensions = Object.assign({}, {
+				c: new Set(['c']),
+				'c++': new Set(['cc', 'cpp']),
+				asm: new Set(['s', 'S']),
+				copy: new Set(['h', 'hpp'])
+			}, src.extensions);
 
 			if(src.path === undefined)
 				src.path = 'src';
@@ -157,9 +159,10 @@ async function sources(info) {
 
 				src.include = src.include.map((include) => path.join(src.path, include));
 				src.include = [...new Set(src.include)];
+				target.sourcesPath = src.path;
 				src.path = null;
 
-				if(src.include.size === 0)
+				if(src.include.length === 0)
 					continue;
 
 				for(let type in src.extensions) {
@@ -212,6 +215,7 @@ function initTarget(info, target) {
 	target.search.scripts = target.search.scripts || new Set();
 	target.objdirectory = path.join(target.directory, target.objdirectory);
 	target.subdirectory = path.join(target.directory, target.subdirectory);
+	target.depends = target.depends || new Set();
 
 	if(target.toolset && target.toolset.length)
 		target.toolset += '-';
@@ -277,6 +281,23 @@ async function makefile(info) {
 			let targetObjects = [];
 
 			for(let type in src) {
+				if(type === 'copy') {
+					let copy = [
+						[...src.copy].join(' ') + ':\n\t@cp --parents -t',
+						target.subdirectory,
+						...src.copy,
+						'\n\t@mv',
+						path.join(target.subdirectory, target.sourcesPath),
+						target.subdirectory,
+						'\n\n' + name + ':',
+						...src.copy
+					];
+
+					copy = copy.filter((e) => !(!e || e.length === 0)).join(' ');
+					out.push(copy);
+					continue;
+				}
+
 				let objects = suffix(src[type], '.o');
 				targetObjects = targetObjects.concat(objects);
 				let compiler = target.toolset + target.compilers[type];
@@ -314,6 +335,7 @@ async function makefile(info) {
 				// linker erikseen, kerää tiedot kaikista kielistä!
 				let link = [
 					name + ':',
+					...target.depends,
 					dirs,
 					targetObjects.join(' ') + '\n\t@' + linker,
 					target.linker.flags,

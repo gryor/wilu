@@ -18,14 +18,25 @@
     "minimatch": "^3.0.0"
   },
   "build": {
-    "sources": {
-      "path": "src",
-      "include": [
-        "**/*.c"
-      ]
-    },
     "+": {
-      "release": {}
+      "release": {
+        "depends": ["include"],
+        "sources": {
+          "path": "src",
+          "include": [
+            "**/*.c"
+          ]
+        }
+      },
+      "include": {
+        "subdirectory": "include",
+        "sources": {
+          "path": "src",
+          "include": [
+            "**/*.h"
+          ]
+        }
+      }
     }
   },
   "devDependencies": {
