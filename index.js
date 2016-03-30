@@ -14,18 +14,26 @@ function isSet(value) {
 	return Object.prototype.toString.call(value) === Object.prototype.toString.call(Set.prototype);
 }
 
-function parseObject(obj) {
+let _cache_aglob = new Map();
+
+function aglob(pattern, options) {
 	try {
-		for(let property in obj) {
-		if(Array.isArray(obj[property])) {
-			obj[property] = new Set(obj[property]);
-		} else if(obj[property] === null) {
-			delete obj[property];
-		} else if(isObject(obj[property])) {
-			parseObject(obj[property]);
-		}
-	}
-	} catch (e) {
+		let cacheKey = JSON.stringify({pattern, options});
+
+		if(_cache_aglob.has(cacheKey))
+			return Promise.resolve(_cache_aglob.get(cacheKey));
+		else
+			return new Promise(function(success, fail) {
+				glob(pattern, options, function (error, results) {
+					if(error)
+						fail(error);
+					else {
+						_cache_aglob.set(cacheKey, results);
+						success(results);
+					}
+				});
+			});
+	} catch(e) {
 		throw e;
 	}
 }
@@ -89,295 +97,593 @@ function combine(parent, childs) {
 	}
 }
 
-function targets(info) {
-	reduce(info.build);
-	combine(info.build);
+export class Version {
+	major = 0;
+	minor = 0;
+	patch = 1;
 
-	if(info.build['+']) {
-		info.build = info.build['+'];
+	constructor(version) {
+		if(version)
+			[this.major, this.minor, this.patch] = version.split('.');
+	}
 
-		for (let target in info.build) {
-				parseObject(info.build[target]);
+	toString() {
+		return `${this.major}.${this.minor}.${this.patch}`;
+	}
+}
+
+export class Options {
+	list = new Set();
+	raw = new Set();
+	preline = '';
+	prefix = '';
+	suffix = '';
+	join = ' ';
+
+	constructor({preline, prefix, suffix, join} = {}) {
+		if(prefix)
+			this.prefix = prefix;
+
+		if(suffix)
+			this.suffix = suffix;
+
+		if(join)
+			this.join = join;
+
+		if(preline)
+			this.preline = preline;
+
+		if(preline && join === undefined)
+			this.join = ',';
+	}
+
+	toString() {
+		try {
+			if(!this.raw.size && !this.list.size)
+				return '';
+
+			let line = [...this.raw];
+
+			if(this.list.size) {
+				line = [...line, this.preline + [...this.list].map((item) => (this.prefix + item + this.suffix)).join(this.join)];
+			}
+
+			return line.join(' ');
+		} catch(e) {
+			throw e;
+		}
+	}
+
+	append(values) {
+		try {
+			if(values)
+				this.list = new Set([...this.list, ...values]);
+		} catch(e) {
+			throw e;
+		}
+	}
+
+	prepend(values) {
+		try {
+			if(values)
+				this.list = new Set([...values, ...this.list]);
+		} catch(e) {
+			throw e;
 		}
 	}
 }
 
-function aglob(pattern, options) {
-	try {
-		return new Promise(function(success, fail) {
-			glob(pattern, options, function (error, results) {
-				if(error)
-					fail(error);
+export class Tool {
+	name = '';
+	options = new Set();
+
+	constructor({name, toolset} = {}) {
+		if(name)
+			this.name = name;
+
+		if(toolset)
+			this.name = toolset + '-' + name;
+	}
+
+	toString() {
+		try {
+			return [this.name, ...this.options].filter((item) => (item && item.length > 0)).join(' ');
+		} catch(e) {
+			throw e;
+		}
+	}
+}
+
+export class CompileRule {
+	targets = new Set();
+	commands = new Set();
+	extension = null;
+
+	constructor({extension} = {}) {
+		if(extension)
+			this.extension = extension;
+	}
+
+	toString() {
+		try {
+			return [...this.targets].join(' ')
+			+ (this.extension ? (`: %.${this.extension}: %`) : ':')
+			+ [...this.commands].map((cmd) => (`\n\t@${cmd}`));
+		} catch(e) {
+			throw e;
+		}
+	}
+
+	append(values) {
+		try {
+			if(values)
+				this.targets = new Set([...this.targets, ...values]);
+		} catch(e) {
+			throw e;
+		}
+	}
+}
+
+export class LinkRule {
+	name = '';
+	depends = new Set();
+	commands = new Set();
+
+	constructor({name} = {}) {
+		if(name)
+			this.name = name;
+	}
+
+	toString() {
+		try {
+			return this.name
+			+ ': '
+			+ [...this.depends].join(' ')
+			+ [...this.commands].map((cmd) => (`\n\t@${cmd}`));
+		} catch(e) {
+			throw e;
+		}
+	}
+
+	append(values) {
+		try {
+			if(values)
+				this.depends = new Set([...this.depends, ...values]);
+		} catch(e) {
+			throw e;
+		}
+	}
+}
+
+export class Sources {
+	includes = new Set();
+	excludes = new Set();
+	path = undefined;
+	_cache = null;
+
+	constructor({path} = {}) {
+		if(path)
+			this.path = path;
+	}
+
+	include(values) {
+		try {
+			if(values)
+				this.includes = new Set([...this.includes, ...values]);
+		} catch(e) {
+			throw e;
+		}
+	}
+
+	exclude(values) {
+		try {
+			if(values)
+				this.excludes = new Set([...this.excludes, ...values]);
+		} catch(e) {
+			throw e;
+		}
+	}
+
+	async files() {
+		try {
+			if(this._cache)
+				return this._cache;
+
+			for(let exclude of this.excludes) {
+				this.includes.delete(exclude);
+			}
+
+			this._cache = await Promise.all([...this.includes].map((pattern) => aglob(pattern, {cwd: this.path})));
+			this._cache = this._cache.reduce((all, current) => [...all, ...current]);
+
+			for(let exclude of this.excludes)
+				this._cache = this._cache.filter((file) => !minimatch(file, exclude));
+
+			this._cache = [...new Set(this._cache)];
+
+			return this._cache;
+		} catch(e) {
+			throw e;
+		}
+	}
+
+	organize(rules) {
+		try {
+			let result = new Map();
+
+			if(this._cache) {
+				for(let [type, exts] of rules) {
+					let matches = new Set(
+						[...exts]
+						.map((ext) => minimatch.match([...this._cache], '*.' + ext, {matchBase: true}))
+						.reduce((a, b) => [...a, ...b])
+					);
+
+					if(matches.size)
+						result.set(type, matches);
+				}
+			}
+
+			return result;
+		} catch(e) {
+			throw e;
+		}
+	}
+
+	toString() {
+		try {
+			if(!this._cache)
+				return '';
+
+			return [...this._cache].join(' ');
+		} catch(e) {
+			throw e;
+		}
+	}
+}
+
+export class Target {
+	target = '';
+	name = '';
+	libname = '';
+	version = new Version('0.0.1');
+	library = false;
+	shared = false;
+	directories = {
+		base: 'build',
+		output: 'bin',
+		objects: 'obj'
+	};
+	options = {
+		compiler: new Map(),
+		assembler: new Options({preline: '-Wa,', prefix: '-'}),
+		linker: new Options({preline: '-Wl,', prefix: '-'}),
+		scripts: new Options({prefix: '-T'}),
+		machine: new Options({prefix: '-m'}),
+		definitions: new Options({prefix: '-D'}),
+		libraries: {
+			static: new Options({suffix: '.a'}),
+			shared: new Options({prefix: '-l'})
+		},
+		search: {
+			includes: new Options({prefix: '-I'}),
+			libraries: new Options({prefix: '-L'}),
+			scripts: new Options({preline: '-Wl,', prefix: '-L'})
+		}
+	};
+	extensions = new Map();
+	depends = new Set();
+	sources = new Sources();
+	tools = new Map();
+	linker = null;
+	rules = new Set();
+	objects = new Set();
+
+	async parse(name, target) {
+		try {
+			log({name, target});
+
+			this.target = name;
+			this.name = target.name || 'app';
+
+			if(target.version)
+				this.version = new Version(target.version);
+
+			if(target.library) {
+				this.library = true;
+				this.shared = !!target.shared;
+
+				if(this.shared) {
+					this.libname = `lib${this.name}.so.${this.version}`;
+					this.options.linker.raw.add('-shared');
+					this.options.linker.raw.add('-fPIC');
+					this.options.linker.list.add(`soname,lib${this.name}.so.${this.version.major}`);
+				} else {
+					this.name += '.a';
+					this.options.linker = new Options();
+					this.options.linker.raw.add('rcs');
+					this.linker = new Tool({name: 'ar', toolset: target.toolset});
+				}
+			}
+
+			Object.assign(this.directories, target.directories);
+
+			if(target.options) {
+				for(let type in target.options.compiler) {
+					let options = new Options({prefix: '-'});
+					options.append(target.options.compiler[type]);
+					this.options.compiler.set(type, options);
+				}
+
+				this.options.assembler.append(target.options.assembler);
+				this.options.linker.append(target.options.linker);
+				this.options.scripts.append(target.scripts);
+				this.options.machine.append(target.machine);
+				this.options.definitions.append(target.definitions);
+
+				if(target.libraries) {
+					this.options.libraries.static.append(target.libraries.static);
+					this.options.libraries.shared.append(target.libraries.shared);
+				}
+
+				if(target.search) {
+					this.options.search.includes.append(target.search.includes);
+					this.options.search.libraries.append(target.search.libraries);
+					this.options.search.scripts.append(target.search.scripts);
+				}
+			}
+
+			target.extensions = target.extension || {};
+			target.extensions.c = target.extensions.c || ['c'];
+			target.extensions.asm = target.extensions.asm || ['s', 'S'];
+			target.extensions['c++'] = target.extensions['c++'] || ['cc', 'cpp'];
+			target.extensions.copy = target.extensions.copy || ['h', 'hpp'];
+
+			for(let type in target.extensions) {
+				this.extensions.set(type, new Set(target.extensions[type]));
+			}
+
+			if(target.depends)
+				this.depends = new Set(target.depends);
+
+			target.sources = target.sources || {};
+			target.sources.path = target.sources.path || 'src';
+
+			if(target.sources.subpath)
+				target.sources.path = path.join(target.sources.path, target.sources.subpath);
+
+			this.sources.path = target.sources.path;
+			this.sources.include(target.sources.include);
+			this.sources.exclude(target.sources.exclude);
+
+			await this.sources.files();
+
+			let files = this.sources.organize(this.extensions);
+
+			target.tools = target.tools || {};
+
+			if(!target.tools.c)
+				target.tools.c = 'gcc';
+
+			if(!target.tools.asm)
+				target.tools.asm = 'gcc -x --assembler-with-cpp';
+
+			if(!target.tools['c++'])
+				target.tools['c++'] = 'g++';
+
+			for(let type in target.tools) {
+				let tool = new Tool({name: target.tools[type], toolset: target.toolset});
+
+				if(this.options.compiler.has('always'));
+				tool.options.add(this.options.compiler.get('always'));
+
+				if(this.options.compiler.has(type));
+				tool.options.add(this.options.compiler.get(type));
+
+				tool.options.add(this.options.machine);
+				tool.options.add(this.options.definitions);
+				tool.options.add(this.options.assembler);
+				tool.options.add(this.options.search.includes);
+
+				this.tools.set(type, tool);
+			}
+
+			if(!this.linker) {
+				let linker = null;
+
+				if(files.has('c++'))
+					linker = this.tools.get('c++').name;
+				else if(files.has('c'))
+					linker = this.tools.get('c').name;
 				else
-					success(results);
-			});
-		});
-	} catch(e) {
-		throw e;
-	}
-}
+					linker = 'gcc';
 
-async function sources(info) {
-	try {
-		for(let name in info.build) {
-			let target = info.build[name];
-
-			target.sources = target.sources || {};
-			let src = target.sources;
-			src.extensions = Object.assign({}, {
-				c: new Set(['c']),
-				'c++': new Set(['cc', 'cpp']),
-				asm: new Set(['s', 'S']),
-				copy: new Set(['h', 'hpp'])
-			}, src.extensions);
-
-			if(src.path === undefined)
-				src.path = 'src';
-
-			if(src.subpath) {
-				src.path = path.join(src.path, src.subpath);
-				delete src.subpath;
+				this.linker = new Tool({name: linker, toolset: target.toolset});
 			}
 
-			if(src.include === undefined)
-				src.include = new Set(['**/*.c']);
+			this.linker.options.add(this.options.linker);
+			this.linker.options.add(this.options.machine);
+			this.linker.options.add(this.options.definitions);
+			this.linker.options.add(this.options.scripts);
+			this.linker.options.add(this.options.libraries.shared);
+			this.linker.options.add(this.options.libraries.static);
+			this.linker.options.add(this.options.search.libraries);
+			this.linker.options.add(this.options.search.scripts);
 
-			if(isSet(src.include) && src.path !== null) {
-				if(isSet(src.exclude)) {
-					for(let exclude of src.exclude) {
-						src.include.delete(exclude);
-					}
-				}
+			let link = new LinkRule({name: this.target});
+			let mkdirs = new CompileRule();
+			mkdirs.commands.add([
+				'mkdir -p $@'
+			]);
 
-				src.include = await Promise.all([...src.include].map((pattern) => aglob(pattern, {cwd: src.path})));
-				src.include = src.include.reduce((all, current) => [...all, ...current]);
+			mkdirs.append([path.join(this.directories.base, this.directories.output)]);
+			this.rules.add(mkdirs);
 
-				if(isSet(src.exclude)) {
-					for(let exclude of src.exclude)
-						src.include = src.include.filter((include) => !minimatch(include, exclude));
-				}
 
-				src.include = src.include.map((include) => path.join(src.path, include));
-				src.include = [...new Set(src.include)];
-				target.sourcesPath = src.path;
-				src.path = null;
+			if(this.depends.size)
+				link.append(this.depends);
 
-				if(src.include.length === 0)
+			for(let [type, tool] of this.tools) {
+				if(!files.has(type))
 					continue;
 
-				for(let type in src.extensions) {
-					src.extensions[type] = new Set([...src.extensions[type]]
-												   .map((ext) => minimatch.match(src.include, '*.' + ext, {matchBase: true}))
-												   .reduce((a, b) => [...a, ...b]));
+				let objects = [...files.get(type)].map((file) => path.join(this.sources.path, file + '.o'));
+				this.objects = new Set([...this.objects, ...objects]);
 
-												   if(src.extensions[type].size === 0)
-													   delete src.extensions[type];
-				}
+				let rule = new CompileRule({extension: 'o'});
+				rule.append(objects);
+				rule.commands.add(tool
+								  + ' -c $< -o '
+								  + path.join(this.directories.base, this.directories.objects, this.target, '$@'));
 
-				target.sources = src.extensions;
-			}
-		}
-	} catch(e) {
-		throw e;
-	}
-}
-
-function prefix(set, text) {
-	return [...set].map((item) => text + item);
-}
-
-function suffix(set, text) {
-	return [...set].map((item) => item + text);
-}
-
-function initTarget(info, target) {
-	try {
-	target.name = target.name || info.name || 'app';
-	target.version = target.version || info.version || '0.0.1';
-	target.directory = target.directory || 'build';
-	target.objdirectory = target.objdirectory || 'obj';
-	target.subdirectory = target.subdirectory || 'bin';
-	target.compilers = target.compilers || {};
-	target.compiler = target.compiler || {};
-	target.compiler.flags = target.compiler.flags || {};
-	target.compiler.flags.always = target.compiler.flags.always || new Set();
-	target.machine = target.machine || new Set();
-	target.definitions = target.definitions || new Set();
-	target.linker = target.linker || {};
-	target.linker.flags = target.linker.flags || new Set();
-	target.linker.scripts = target.linker.scripts || new Set();
-	target.assembler = target.assembler || {};
-	target.assembler.flags = target.assembler.flags || new Set();
-	target.libraries = target.libraries || new Set();
-	target.search = target.search || {};
-	target.search.includes = target.search.includes || new Set();
-	target.search.libraries = target.search.libraries || new Set();
-	target.search.scripts = target.search.scripts || new Set();
-	target.objdirectory = path.join(target.directory, target.objdirectory);
-	target.subdirectory = path.join(target.directory, target.subdirectory);
-	target.depends = target.depends || new Set();
-
-	if(target.toolset && target.toolset.length)
-		target.toolset += '-';
-	else
-		target.toolset = '';
-
-	if(target.compilers.c === undefined)
-		target.compilers.c = 'gcc';
-
-	if(target.compilers['c++'] === undefined)
-		target.compilers['c++'] = 'g++';
-
-	if(target.compilers.asm === undefined)
-		target.compilers.asm = 'gcc -x --assembler-with-cpp';
-
-	if(isSet(target.machine))
-		target.machine = prefix(target.machine, '-m').join(' ');
-	if(isSet(target.definitions))
-		target.definitions = prefix(target.definitions, '-D').join(' ');
-	if(isSet(target.linker.flags))
-		target.linker.flags = prefix(target.linker.flags, '-Wl,-').join(' ');
-	if(isSet(target.linker.scripts))
-		target.linker.scripts = prefix(target.linker.scripts, '-T').join(' ');
-	if(isSet(target.assembler.flags))
-		target.assembler.flags = prefix(target.assembler.flags, '-Wa,-').join(' ');
-	if(isSet(target.libraries))
-		target.libraries = prefix(target.libraries, '-l').join(' ');
-	if(isSet(target.search.includes))
-		target.search.includes = prefix(target.search.includes, '-I').join(' ');
-	if(isSet(target.search.libraries))
-		target.search.libraries = prefix(target.search.libraries, '-L').join(' ');
-	if(isSet(target.search.scripts))
-		target.search.scripts = prefix(target.search.scripts, '-Wl,-L').join(' ');
-
-	for(let type in target.compiler.flags) {
-		if(isSet(target.compiler.flags[type]))
-			target.compiler.flags[type] = prefix(target.compiler.flags[type], '-').join(' ');
-	}
-	} catch (e) {
-		throw e;
-	}
-}
-
-async function makefile(info) {
-	try {
-		if(!info.build)
-			throw new Error('package.json:build is not defined');
-
-		targets(info);
-		await sources(info);
-
-		let out = [];
-		let outdirs = new Set();
-
-		for(let name in info.build) {
-			let target = info.build[name];
-
-			initTarget(info, target);
-
-			let compilers = target.compilers;
-			let linker = target.toolset + (target.sources['c++'] ? target.compilers['c++'] : target.compilers['c']);
-			let src = target.sources;
-			let targetObjects = [];
-
-			for(let type in src) {
-				if(type === 'copy') {
-					let copy = [
-						[...src.copy].join(' ') + ':\n\t@cp --parents -t',
-						target.subdirectory,
-						...src.copy,
-						'\n\t@mv',
-						path.join(target.subdirectory, target.sourcesPath),
-						target.subdirectory,
-						'\n\n' + name + ':',
-						...src.copy
-					];
-
-					copy = copy.filter((e) => !(!e || e.length === 0)).join(' ');
-					out.push(copy);
-					continue;
-				}
-
-				let objects = suffix(src[type], '.o');
-				targetObjects = targetObjects.concat(objects);
-				let compiler = target.toolset + target.compilers[type];
-				let flags = target.compiler.flags.always;
-
-				if(target.compiler.flags[type])
-					flags += ' ' + target.compiler.flags[type];
-
-				let compile = [
-					objects.join(' ') + ': %.o: %\n\t@' + compiler,
-					flags,
-					target.machine,
-					target.definitions,
-					target.search.includes,
-					target.assembler.flags,
-					'-c $< -o',
-					path.join(target.objdirectory, name, '$@')
-				];
-
-				compile = compile.filter((e) => !(!e || e.length === 0)).join(' ');
-				out.push(compile);
+								  this.rules.add(rule);
 			}
 
-			if(targetObjects.length === 0)
-				continue;
-
-				targetObjects = [...new Set(targetObjects)];
-
-				outdirs.add(target.directory);
-
-				let builtObjects = prefix(targetObjects, path.join(target.objdirectory, name) + path.sep);
-				let dirs = [target.subdirectory, ...new Set(builtObjects.map((o) => path.dirname(o)))].join(' ');
-				let mkdirs = [dirs + ':\n\t@mkdir -p ' + dirs];
-
-				// linker erikseen, kerää tiedot kaikista kielistä!
-				let link = [
-					name + ':',
-					...target.depends,
-					dirs,
-					targetObjects.join(' ') + '\n\t@' + linker,
-					target.linker.flags,
-					target.linker.scripts,
-					target.machine,
-					target.definitions,
-					target.libraries,
-					target.search.libraries,
-					target.search.scripts,
-					builtObjects.join(' '),
+			if(this.objects.size) {
+				mkdirs.append([...this.objects].map((file) => path.join(this.directories.base, this.directories.objects, this.target, path.dirname(file))));
+				link.append(this.objects);
+				link.commands.add([
+					this.linker,
+					...this.objects,
 					'-o',
-					path.join(target.subdirectory, target.name)
-				];
+					path.join(this.directories.base, this.directories.output,
+							  ((this.library && this.shared) ? this.libname : this.name))
+				].join(' '));
 
-				link = link.filter((e) => !(!e || e.length === 0)).join(' ');
-				out.push(mkdirs, link);
-		}
+				if(this.library && this.shared) {
+					link.commands.add([
+						'ln -sf',
+						this.libname,
+						path.join(this.directories.base, this.directories.output, `lib${this.name}.so`)
+					].join(' '));
 
-		if(outdirs.size)
-			out.push('clean:\n\t-@rm -rf ' + [...outdirs].join(' '));
+					link.commands.add([
+						'ln -sf',
+						this.libname,
+						path.join(this.directories.base, this.directories.output, `lib${this.name}.so.${this.version.major}`)
+					].join(' '));
+				}
+			}
 
-		out = out.filter((e) => !(!e || e.length === 0));
-		out = out.join('\n\n');
+			if(files.has('copy')) {
+				let rule = new CompileRule();
+				rule.append(files.get('copy'));
+				rule.commands.add([
+					'cd',
+					this.sources.path + '; cp --parents -t',
+					path.relative(
+						path.join(process.cwd(), this.sources.path),
+						path.join(process.cwd(), this.directories.base, this.directories.output)
+					),
+					'$@'
+				].join(' '));
 
-		if(out.length)
-			out += '\n';
 
-		return out;
-	} catch(e) {
-		throw e;
-	}
-}
+				this.rules.add(rule);
+				link.append(files.get('copy'));
 
-export default makefile;
+				mkdirs.append([...files.get('copy')].map((file) => path.join(this.directories.base, this.directories.output, path.dirname(file))));
+			}
 
-if(require.main === module) {
-(async function () {
-	try {
-		log('makefile', '\n' + await makefile(require('./package.json')));
-	} catch (e) {
+			link.append(mkdirs.targets);
+			this.rules.add(link);
+
+			if(files.size) {
+				let clean = new LinkRule({name: 'clean-' + this.target});
+				clean.commands.add('rm -rf ' + this.directories.base);
+				this.rules.add(clean);
+			}
+
+			log(this);
+		} catch(e) {
 			log(e);
 			throw e;
+		}
+	}
+}
+
+export class Makefile {
+	targets = new Set();
+
+	async parse(build) {
+		try {
+			reduce(build);
+			combine(build);
+
+			if(build['+'])
+				build = build['+'];
+			else
+				throw new Error('No targets');
+
+			let calls = [];
+			for(let name in build) {
+				let target = new Target;
+				this.targets.add(target);
+				calls.push(target.parse(name, build[name]));
+			}
+
+			await Promise.all(calls);
+
+			let rules = new Set([...this.targets].map(({rules}) => rules).reduce((a, b) => [...a, ...b]));
+
+			for(let rule of rules) {
+				if(rule instanceof CompileRule === false)
+					continue;
+
+				for(let rule2 of rules) {
+					if(rule2 instanceof CompileRule === false)
+						continue;
+
+					if(rule === rule2)
+						continue;
+
+					if(rule.commands.size !== rule2.commands.size)
+						continue;
+
+					let identical = true;
+
+					for(let cmd of rule.commands) {
+						if(!rule2.commands.has(cmd)) {
+							identical = false;
+							break;
+						}
+					}
+
+					if(!identical)
+						break;
+
+					for(let cmd of rule2.commands) {
+						if(!rule.commands.has(cmd)) {
+							identical = false;
+							break;
+						}
+					}
+
+					if(!identical)
+						break;
+
+					rule.append(rule2.targets);
+					rules.delete(rule2);
+				}
+			}
+
+			return [...rules].join('\n\n');
+
+		} catch(e) {
+			throw e;
+		}
+	}
+}
+
+
+(async function () {
+	try {
+		let makefile = new Makefile();
+		let out = await makefile.parse(require('./package.json').build);
+		log(out);
+		require('fs').writeFile('makefile', out);
+	} catch(e) {
+		log(e);
+		throw e;
 	}
 })();
-}
