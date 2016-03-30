@@ -187,7 +187,7 @@ export class Tool {
 
 	toString() {
 		try {
-			return [this.name, ...this.options].filter((item) => (item && item.length > 0)).join(' ');
+			return [this.name, ...[...this.options].map((opt) => opt.toString())].filter((item) => (item && item.length > 0)).join(' ');
 		} catch(e) {
 			throw e;
 		}
@@ -208,7 +208,7 @@ export class CompileRule {
 		try {
 			return [...this.targets].join(' ')
 			+ (this.extension ? (`: %.${this.extension}: %`) : ':')
-			+ [...this.commands].map((cmd) => (`\n\t@${cmd}`));
+			+ [...this.commands].map((cmd) => (`\n\t@${cmd}`)).join('');
 		} catch(e) {
 			throw e;
 		}
@@ -239,7 +239,7 @@ export class LinkRule {
 			return this.name
 			+ ': '
 			+ [...this.depends].join(' ')
-			+ [...this.commands].map((cmd) => (`\n\t@${cmd}`));
+			+ [...this.commands].map((cmd) => (`\n\t@${cmd}`)).join('');
 		} catch(e) {
 			throw e;
 		}
@@ -511,14 +511,6 @@ export class Target {
 			this.linker.options.add(this.options.search.scripts);
 
 			let link = new LinkRule({name: this.target});
-			let mkdirs = new CompileRule();
-			mkdirs.commands.add([
-				'mkdir -p $@'
-			]);
-
-			mkdirs.append([path.join(this.directories.base, this.directories.output)]);
-			this.rules.add(mkdirs);
-
 
 			if(this.depends.size)
 				link.append(this.depends);
@@ -532,6 +524,10 @@ export class Target {
 
 				let rule = new CompileRule({extension: 'o'});
 				rule.append(objects);
+				rule.commands.add([
+					'mkdir -p ${dir',
+					path.join(this.directories.base, this.directories.objects, this.target, '$@') + '}'
+				].join(' '));
 				rule.commands.add(tool
 								  + ' -c $< -o '
 								  + path.join(this.directories.base, this.directories.objects, this.target, '$@'));
@@ -540,11 +536,16 @@ export class Target {
 			}
 
 			if(this.objects.size) {
-				mkdirs.append([...this.objects].map((file) => path.join(this.directories.base, this.directories.objects, this.target, path.dirname(file))));
 				link.append(this.objects);
+
+				link.commands.add([
+					'mkdir -p',
+					path.join(this.directories.base, this.directories.output)
+				].join(' '));
+
 				link.commands.add([
 					this.linker,
-					...this.objects,
+					...[...this.objects].map((object) => path.join(this.directories.base, this.directories.objects, this.target, object)),
 					'-o',
 					path.join(this.directories.base, this.directories.output,
 							  ((this.library && this.shared) ? this.libname : this.name))
@@ -569,6 +570,10 @@ export class Target {
 				let rule = new CompileRule();
 				rule.append(files.get('copy'));
 				rule.commands.add([
+					'mkdir -p ${dir',
+					path.join(this.directories.base, this.directories.output, '$@') + '}'
+				].join(' '));
+				rule.commands.add([
 					'cd',
 					this.sources.path + '; cp --parents -t',
 					path.relative(
@@ -582,10 +587,8 @@ export class Target {
 				this.rules.add(rule);
 				link.append(files.get('copy'));
 
-				mkdirs.append([...files.get('copy')].map((file) => path.join(this.directories.base, this.directories.output, path.dirname(file))));
 			}
 
-			link.append(mkdirs.targets);
 			this.rules.add(link);
 
 			if(files.size) {
@@ -625,47 +628,9 @@ export class Makefile {
 			await Promise.all(calls);
 
 			let rules = new Set([...this.targets].map(({rules}) => rules).reduce((a, b) => [...a, ...b]));
-
-			for(let rule of rules) {
-				if(rule instanceof CompileRule === false)
-					continue;
-
-				for(let rule2 of rules) {
-					if(rule2 instanceof CompileRule === false)
-						continue;
-
-					if(rule === rule2)
-						continue;
-
-					if(rule.commands.size !== rule2.commands.size)
-						continue;
-
-					let identical = true;
-
-					for(let cmd of rule.commands) {
-						if(!rule2.commands.has(cmd)) {
-							identical = false;
-							break;
-						}
-					}
-
-					if(!identical)
-						break;
-
-					for(let cmd of rule2.commands) {
-						if(!rule.commands.has(cmd)) {
-							identical = false;
-							break;
-						}
-					}
-
-					if(!identical)
-						break;
-
-					rule.append(rule2.targets);
-					rules.delete(rule2);
-				}
-			}
+			let clean = new LinkRule({name: 'clean'});
+			clean.append(Object.keys(build).map((target) => 'clean-' + target));
+			rules.add(clean);
 
 			return [...rules].join('\n\n');
 

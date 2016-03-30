@@ -34,17 +34,23 @@
 		},
 		"+": {
 			"release": {
-				"depends": [
-					"include"
-				],
 				"sources": {
 					"include": [
 						"**/*.c"
 					]
+				},
+				"options": {
+					"compiler": {
+						"always": ["Wall", "O3"],
+						"c": ["Wextra"],
+						"c++": "std11"
+					}
 				}
 			},
 			"include": {
-				"subdirectory": "include",
+				"directories": {
+					"output": "include"
+				},
 				"sources": {
 					"path": "src",
 					"include": [
