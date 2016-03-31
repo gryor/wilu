@@ -7,7 +7,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"author": "Wilhelm Matilainen",
-	"license": "ISC",
+	"license": "GPLv3",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/wilhelmmatilainen/wilu.git"
@@ -33,6 +33,9 @@
 			"path": "src"
 		},
 		"+": {
+			"all": {
+				"depends": ["release", "libstatic", "libshared", "include"]
+			},
 			"release": {
 				"sources": {
 					"include": [
@@ -44,6 +47,19 @@
 						"always": ["Wall", "O3"],
 						"c": ["Wextra"],
 						"c++": "std11"
+					}
+				},
+				"+": {
+					"libstatic": {
+						"directories": {
+							"output": "lib"
+						},
+						"library": true,
+						"+": {
+							"libshared": {
+								"shared": true
+							}
+						}
 					}
 				}
 			},

@@ -2,6 +2,7 @@ import debug from 'debug';
 import path from 'path';
 import glob from 'glob';
 import minimatch from 'minimatch';
+import fs from 'fs';
 
 let log = debug('wilu');
 
@@ -12,6 +13,16 @@ function isObject(value) {
 
 function isSet(value) {
 	return Object.prototype.toString.call(value) === Object.prototype.toString.call(Set.prototype);
+}
+
+function writeFile(path, content) {
+	try {
+		return new Promise(function(success, fail) {
+			fs.writeFile(path, content, (error) => (error ? fail(error) : success()));
+		});
+	} catch (e) {
+		throw e;
+	}
 }
 
 let _cache_aglob = new Map();
@@ -198,16 +209,24 @@ export class CompileRule {
 	targets = new Set();
 	commands = new Set();
 	extension = null;
+	directory = null;
+	src = null;
 
-	constructor({extension} = {}) {
+	constructor({extension, directory, src} = {}) {
 		if(extension)
 			this.extension = extension;
+
+		if(directory)
+			this.directory = directory;
+
+		if(src)
+			this.src = src;
 	}
 
 	toString() {
 		try {
 			return [...this.targets].join(' ')
-			+ (this.extension ? (`: %.${this.extension}: %`) : ':')
+			+ ': ' + path.join(this.directory, '%' + (this.extension ? ('.' + this.extension) + ': %' : ': ' + path.join(this.src, '%')))
 			+ [...this.commands].map((cmd) => (`\n\t@${cmd}`)).join('');
 		} catch(e) {
 			throw e;
@@ -289,6 +308,9 @@ export class Sources {
 			if(this._cache)
 				return this._cache;
 
+			if(!this.includes.size)
+				return new Set();
+
 			for(let exclude of this.excludes) {
 				this.includes.delete(exclude);
 			}
@@ -299,7 +321,7 @@ export class Sources {
 			for(let exclude of this.excludes)
 				this._cache = this._cache.filter((file) => !minimatch(file, exclude));
 
-			this._cache = [...new Set(this._cache)];
+			this._cache = new Set(this._cache);
 
 			return this._cache;
 		} catch(e) {
@@ -519,20 +541,15 @@ export class Target {
 				if(!files.has(type))
 					continue;
 
-				let objects = [...files.get(type)].map((file) => path.join(this.sources.path, file + '.o'));
+				let directory = path.join(this.directories.base, this.directories.objects, this.target);
+				let objects = [...files.get(type)].map((file) => path.join(directory, this.sources.path, file + '.o'));
 				this.objects = new Set([...this.objects, ...objects]);
 
-				let rule = new CompileRule({extension: 'o'});
+				let rule = new CompileRule({extension: 'o', directory});
 				rule.append(objects);
-				rule.commands.add([
-					'mkdir -p ${dir',
-					path.join(this.directories.base, this.directories.objects, this.target, '$@') + '}'
-				].join(' '));
-				rule.commands.add(tool
-								  + ' -c $< -o '
-								  + path.join(this.directories.base, this.directories.objects, this.target, '$@'));
-
-								  this.rules.add(rule);
+				rule.commands.add('mkdir -p ${dir $@}');
+				rule.commands.add(tool + ' -c $< -o $@')
+				this.rules.add(rule);
 			}
 
 			if(this.objects.size) {
@@ -543,13 +560,13 @@ export class Target {
 					path.join(this.directories.base, this.directories.output)
 				].join(' '));
 
-				link.commands.add([
-					this.linker,
-					...[...this.objects].map((object) => path.join(this.directories.base, this.directories.objects, this.target, object)),
-					'-o',
-					path.join(this.directories.base, this.directories.output,
-							  ((this.library && this.shared) ? this.libname : this.name))
-				].join(' '));
+				let output = path.join(this.directories.base, this.directories.output,
+							  ((this.library && this.shared) ? this.libname : this.name));
+
+				if(this.library && !this.shared)
+					link.commands.add([this.linker, output, ...this.objects].join(' '));
+				else
+					link.commands.add([this.linker, ...this.objects, '-o', output].join(' '));
 
 				if(this.library && this.shared) {
 					link.commands.add([
@@ -563,39 +580,46 @@ export class Target {
 						this.libname,
 						path.join(this.directories.base, this.directories.output, `lib${this.name}.so.${this.version.major}`)
 					].join(' '));
+
+					link.commands.add([
+						'ln -sf',
+						this.libname,
+						path.join(this.directories.base, this.directories.output,
+								  `lib${this.name}.so.${this.version.major}.${this.version.minor}`)
+					].join(' '));
 				}
 			}
 
 			if(files.has('copy')) {
-				let rule = new CompileRule();
-				rule.append(files.get('copy'));
-				rule.commands.add([
-					'mkdir -p ${dir',
-					path.join(this.directories.base, this.directories.output, '$@') + '}'
-				].join(' '));
+				let directory = path.join(this.directories.base, this.directories.output);
+				let rule = new CompileRule({directory, src: this.sources.path});
+				let targets = [...files.get('copy')].map((file) => path.join(directory, file));
+				rule.append(targets);
+				rule.commands.add('mkdir -p ${dir $@}');
 				rule.commands.add([
 					'cd',
 					this.sources.path + '; cp --parents -t',
 					path.relative(
 						path.join(process.cwd(), this.sources.path),
-						path.join(process.cwd(), this.directories.base, this.directories.output)
+						path.join(process.cwd(), directory)
 					),
-					'$@'
+					'$*'
 				].join(' '));
 
 
 				this.rules.add(rule);
-				link.append(files.get('copy'));
-
+				link.append(targets);
 			}
 
 			this.rules.add(link);
 
+			let clean = new LinkRule({name: 'clean-' + this.target});
+
 			if(files.size) {
-				let clean = new LinkRule({name: 'clean-' + this.target});
 				clean.commands.add('rm -rf ' + this.directories.base);
-				this.rules.add(clean);
 			}
+
+			this.rules.add(clean);
 
 			log(this);
 		} catch(e) {
@@ -632,23 +656,39 @@ export class Makefile {
 			clean.append(Object.keys(build).map((target) => 'clean-' + target));
 			rules.add(clean);
 
-			return [...rules].join('\n\n');
-
+			return [[
+				'comma := ,',
+				'empty:=',
+				'space:= $(empty) $(empty)',
+				'destdir ?=',
+				'prefix ?= /usr',
+				'installdir := ${destdir}${prefix}',
+				'.DEFAULT_GOAL := all'
+			].join('\n'), ...rules].join('\n\n');
 		} catch(e) {
 			throw e;
 		}
 	}
 }
 
-
-(async function () {
+export default async function makefile(build) {
 	try {
 		let makefile = new Makefile();
-		let out = await makefile.parse(require('./package.json').build);
-		log(out);
-		require('fs').writeFile('makefile', out);
+		await writeFile('makefile', await makefile.parse(build));
 	} catch(e) {
-		log(e);
 		throw e;
 	}
-})();
+}
+
+if(require.main === module)
+	(async function () {
+		try {
+			let makefile = new Makefile();
+			let out = await makefile.parse(require('./package.json').build);
+			log(out);
+			require('fs').writeFile('makefile', out);
+		} catch(e) {
+			log(e);
+			throw e;
+		}
+	})();
