@@ -799,7 +799,7 @@ var Target = exports.Target = function () {
 
 									if (files.has('c++')) linker = this.tools.get('c++').name;else if (files.has('c')) linker = this.tools.get('c').name;else linker = 'gcc';
 
-									this.linker = new Tool({ name: linker, toolset: target.toolset });
+									this.linker = new Tool({ name: linker });
 								}
 
 								this.linker.options.add(this.options.linker);

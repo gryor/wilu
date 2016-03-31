@@ -198,7 +198,11 @@ export class Tool {
 
 	toString() {
 		try {
-			return [this.name, ...[...this.options].map((opt) => opt.toString())].filter((item) => (item && item.length > 0)).join(' ');
+			return [this.name, ...[...this.options]
+				.filter((item) => (!!item))
+				.map((opt) => opt.toString())]
+				.filter((item) => (item && item.length > 0))
+				.join(' ');
 		} catch(e) {
 			throw e;
 		}
@@ -520,7 +524,7 @@ export class Target {
 				else
 					linker = 'gcc';
 
-				this.linker = new Tool({name: linker, toolset: target.toolset});
+				this.linker = new Tool({name: linker});
 			}
 
 			this.linker.options.add(this.options.linker);
