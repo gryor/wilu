@@ -51,7 +51,7 @@
         },
         "options": {
           "compiler": {
-            "always": [
+            "all": [
               "Wall",
               "O3"
             ],
