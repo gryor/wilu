@@ -779,8 +779,8 @@ var Target = exports.Target = function () {
 									tool = new Tool({ name: target.tools[_type2], toolset: target.toolset });
 
 
-									if (this.options.compiler.has('always')) ;
-									tool.options.add(this.options.compiler.get('always'));
+									if (this.options.compiler.has('all')) ;
+									tool.options.add(this.options.compiler.get('all'));
 
 									if (this.options.compiler.has(_type2)) ;
 									tool.options.add(this.options.compiler.get(_type2));

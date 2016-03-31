@@ -496,8 +496,8 @@ export class Target {
 			for(let type in target.tools) {
 				let tool = new Tool({name: target.tools[type], toolset: target.toolset});
 
-				if(this.options.compiler.has('always'));
-				tool.options.add(this.options.compiler.get('always'));
+				if(this.options.compiler.has('all'));
+				tool.options.add(this.options.compiler.get('all'));
 
 				if(this.options.compiler.has(type));
 				tool.options.add(this.options.compiler.get(type));
