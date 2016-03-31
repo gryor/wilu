@@ -1,85 +1,95 @@
 {
-	"name": "wilu",
-	"version": "0.0.1",
-	"description": "",
-	"main": "app.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"author": "Wilhelm Matilainen",
-	"license": "GPLv3",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/wilhelmmatilainen/wilu.git"
-	},
-	"babel": {
-		"presets": [
-			"es2015",
-			"stage-0"
-		],
-		"plugins": [
-			"transform-class-properties"
-		]
-	},
-	"dependencies": {
-		"debug": "^2.2.0",
-		"glob": "^7.0.3",
-		"minimatch": "^3.0.0"
-	},
-	"build": {
-		"name": "wilu",
-		"version": "1.2.3",
-		"sources": {
-			"path": "src"
-		},
-		"+": {
-			"all": {
-				"depends": ["release", "libstatic", "libshared", "include"]
-			},
-			"release": {
-				"sources": {
-					"include": [
-						"**/*.c"
-					]
-				},
-				"options": {
-					"compiler": {
-						"always": ["Wall", "O3"],
-						"c": ["Wextra"],
-						"c++": "std11"
-					}
-				},
-				"+": {
-					"libstatic": {
-						"directories": {
-							"output": "lib"
-						},
-						"library": true,
-						"+": {
-							"libshared": {
-								"shared": true
-							}
-						}
-					}
-				}
-			},
-			"include": {
-				"directories": {
-					"output": "include"
-				},
-				"sources": {
-					"path": "src",
-					"include": [
-						"**/*.h"
-					]
-				}
-			}
-		}
-	},
-	"devDependencies": {
-		"babel-cli": "^6.6.5",
-		"babel-plugin-transform-class-properties": "^6.6.0",
-		"babel-preset-es2015": "^6.6.0",
-		"babel-preset-stage-0": "^6.5.0"
-	}
+  "name": "wilu",
+  "version": "0.0.2",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Wilhelm Matilainen",
+  "license": "GPLv3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wilhelmmatilainen/wilu.git"
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "stage-0"
+    ],
+    "plugins": [
+      "transform-class-properties"
+    ]
+  },
+  "dependencies": {
+    "debug": "^2.2.0",
+    "glob": "^7.0.3",
+    "minimatch": "^3.0.0"
+  },
+  "build": {
+    "name": "wilu",
+    "version": "1.2.3",
+    "sources": {
+      "path": "src"
+    },
+    "+": {
+      "all": {
+        "depends": [
+          "release",
+          "libstatic",
+          "libshared",
+          "include"
+        ]
+      },
+      "release": {
+        "sources": {
+          "include": [
+            "**/*.c"
+          ]
+        },
+        "options": {
+          "compiler": {
+            "always": [
+              "Wall",
+              "O3"
+            ],
+            "c": [
+              "Wextra"
+            ],
+            "c++": "std11"
+          }
+        },
+        "+": {
+          "libstatic": {
+            "directories": {
+              "output": "lib"
+            },
+            "library": true,
+            "+": {
+              "libshared": {
+                "shared": true
+              }
+            }
+          }
+        }
+      },
+      "include": {
+        "directories": {
+          "output": "include"
+        },
+        "sources": {
+          "path": "src",
+          "include": [
+            "**/*.h"
+          ]
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "babel-cli": "^6.6.5",
+    "babel-plugin-transform-class-properties": "^6.6.0",
+    "babel-preset-es2015": "^6.6.0",
+    "babel-preset-stage-0": "^6.5.0"
+  }
 }
