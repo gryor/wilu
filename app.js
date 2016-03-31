@@ -681,7 +681,7 @@ var Target = exports.Target = function () {
 			var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(name, target) {
 				var _this4 = this;
 
-				var type, options, _type, files, _type2, tool, linker, link, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _loop2, _iterator4, _step4, _ret4, output, clean;
+				var type, options, opt, _type, files, _type2, tool, linker, link, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _loop2, _iterator4, _step4, _ret4, output, clean;
 
 				return regeneratorRuntime.wrap(function _callee2$(_context2) {
 					while (1) {
@@ -738,6 +738,14 @@ var Target = exports.Target = function () {
 										this.options.search.includes.append(target.search.includes);
 										this.options.search.libraries.append(target.search.libraries);
 										this.options.search.scripts.append(target.search.scripts);
+									}
+
+									if (target.options.raw) {
+										if (target.options.raw.linker) {
+											for (opt in target.options.raw.linker) {
+												target.options.linker.raw.add(opt);
+											}
+										}
 									}
 								}
 

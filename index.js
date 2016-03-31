@@ -457,6 +457,13 @@ export class Target {
 					this.options.search.libraries.append(target.search.libraries);
 					this.options.search.scripts.append(target.search.scripts);
 				}
+
+				if(target.options.raw) {
+					if(target.options.raw.linker) {
+						for(let opt in target.options.raw.linker)
+							target.options.linker.raw.add(opt);
+					}
+				}
 			}
 
 			target.extensions = target.extension || {};
