@@ -1,12 +1,12 @@
 {
   "name": "wilu",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-	"babel": "babel index.js -o app.js; git commit -am \"transform\"",
-	"up": "npm run babel; npm version patch; git push; npm publish"
+    "babel": "babel index.js -o app.js; git commit -am \"transform\"",
+    "up": "npm run babel; npm version patch; git push; npm publish"
   },
   "author": "Wilhelm Matilainen",
   "license": "GPLv3",
