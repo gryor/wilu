@@ -572,7 +572,7 @@ export class Target {
 				].join(' '));
 
 				let output = path.join(this.directories.base, this.directories.output,
-							  ((this.library && this.shared) ? this.libname : this.name));
+									   ((this.library && this.shared) ? this.libname : this.name));
 
 				if(this.library && !this.shared)
 					link.commands.add([this.linker, output, ...this.objects].join(' '));
@@ -622,15 +622,19 @@ export class Target {
 				link.append(targets);
 			}
 
-			this.rules.add(link);
-
-			let clean = new LinkRule({name: 'clean-' + this.target});
-
-			if(files.size) {
-				clean.commands.add('rm -rf ' + this.directories.base);
+			if(target.commands) {
+				for(let cmd of target.commands)
+					link.commands.add(cmd);
 			}
 
-			this.rules.add(clean);
+			this.rules.add(link);
+
+			if(files.size) {
+				let clean = new LinkRule({name: 'clean-' + this.target});
+				clean.commands.add('rm -rf ' + this.directories.base);
+				this.rules.add(clean);
+			}
+
 
 			log(this);
 		} catch(e) {
@@ -664,7 +668,9 @@ export class Makefile {
 
 			let rules = new Set([...this.targets].map(({rules}) => rules).reduce((a, b) => [...a, ...b]));
 			let clean = new LinkRule({name: 'clean'});
-			clean.append(Object.keys(build).map((target) => 'clean-' + target));
+
+			clean.append([...rules].filter((rule) => (rule instanceof LinkRule && rule.depends.size && rule.commands.size)).map((rule) => 'clean-' + rule.name));
+
 			rules.add(clean);
 
 			return [[

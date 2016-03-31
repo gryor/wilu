@@ -681,7 +681,7 @@ var Target = exports.Target = function () {
 			var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(name, target) {
 				var _this4 = this;
 
-				var type, options, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, opt, _type, files, _type2, tool, linker, link, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _loop2, _iterator5, _step5, _ret4, output, clean;
+				var type, options, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, opt, _type, files, _type2, tool, linker, link, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _loop2, _iterator5, _step5, _ret4, output, _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, cmd, clean;
 
 				return regeneratorRuntime.wrap(function _callee2$(_context2) {
 					while (1) {
@@ -994,34 +994,81 @@ var Target = exports.Target = function () {
 									})();
 								}
 
-								this.rules.add(link);
-
-								clean = new LinkRule({ name: 'clean-' + this.target });
-
-
-								if (files.size) {
-									clean.commands.add('rm -rf ' + this.directories.base);
+								if (!target.commands) {
+									_context2.next = 118;
+									break;
 								}
 
-								this.rules.add(clean);
+								_iteratorNormalCompletion6 = true;
+								_didIteratorError6 = false;
+								_iteratorError6 = undefined;
+								_context2.prev = 102;
 
-								log(this);
-								_context2.next = 109;
+								for (_iterator6 = target.commands[Symbol.iterator](); !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+									cmd = _step6.value;
+
+									link.commands.add(cmd);
+								}_context2.next = 110;
 								break;
 
-							case 105:
-								_context2.prev = 105;
-								_context2.t2 = _context2['catch'](0);
+							case 106:
+								_context2.prev = 106;
+								_context2.t2 = _context2['catch'](102);
+								_didIteratorError6 = true;
+								_iteratorError6 = _context2.t2;
 
-								log(_context2.t2);
-								throw _context2.t2;
+							case 110:
+								_context2.prev = 110;
+								_context2.prev = 111;
 
-							case 109:
+								if (!_iteratorNormalCompletion6 && _iterator6.return) {
+									_iterator6.return();
+								}
+
+							case 113:
+								_context2.prev = 113;
+
+								if (!_didIteratorError6) {
+									_context2.next = 116;
+									break;
+								}
+
+								throw _iteratorError6;
+
+							case 116:
+								return _context2.finish(113);
+
+							case 117:
+								return _context2.finish(110);
+
+							case 118:
+
+								this.rules.add(link);
+
+								if (files.size) {
+									clean = new LinkRule({ name: 'clean-' + this.target });
+
+									clean.commands.add('rm -rf ' + this.directories.base);
+									this.rules.add(clean);
+								}
+
+								log(this);
+								_context2.next = 127;
+								break;
+
+							case 123:
+								_context2.prev = 123;
+								_context2.t3 = _context2['catch'](0);
+
+								log(_context2.t3);
+								throw _context2.t3;
+
+							case 127:
 							case 'end':
 								return _context2.stop();
 						}
 					}
-				}, _callee2, this, [[0, 105], [21, 25, 29, 37], [30,, 32, 36], [72, 84, 88, 96], [89,, 91, 95]]);
+				}, _callee2, this, [[0, 123], [21, 25, 29, 37], [30,, 32, 36], [72, 84, 88, 96], [89,, 91, 95], [102, 106, 110, 118], [111,, 113, 117]]);
 			}));
 
 			function parse(_x7, _x8) {
@@ -1090,9 +1137,13 @@ var Makefile = exports.Makefile = function () {
 								}));
 								clean = new LinkRule({ name: 'clean' });
 
-								clean.append(Object.keys(build).map(function (target) {
-									return 'clean-' + target;
+
+								clean.append([].concat(_toConsumableArray(rules)).filter(function (rule) {
+									return rule instanceof LinkRule && rule.depends.size && rule.commands.size;
+								}).map(function (rule) {
+									return 'clean-' + rule.name;
 								}));
+
 								rules.add(clean);
 
 								return _context3.abrupt('return', [['comma := ,', 'empty:=', 'space:= $(empty) $(empty)', 'destdir ?=', 'prefix ?= /usr', 'installdir := ${destdir}${prefix}', '.DEFAULT_GOAL := all'].join('\n')].concat(_toConsumableArray(rules)).join('\n\n'));
