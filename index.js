@@ -461,7 +461,7 @@ export class Target {
 				if(target.options.raw) {
 					if(target.options.raw.linker) {
 						for(let opt in target.options.raw.linker)
-							target.options.linker.raw.add(opt);
+							this.options.linker.raw.add(opt);
 					}
 				}
 			}
