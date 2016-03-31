@@ -460,7 +460,7 @@ export class Target {
 
 				if(target.options.raw) {
 					if(target.options.raw.linker) {
-						for(let opt in target.options.raw.linker)
+						for(let opt of target.options.raw.linker)
 							this.options.linker.raw.add(opt);
 					}
 				}

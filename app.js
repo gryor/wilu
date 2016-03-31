@@ -681,7 +681,7 @@ var Target = exports.Target = function () {
 			var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(name, target) {
 				var _this4 = this;
 
-				var type, options, opt, _type, files, _type2, tool, linker, link, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _loop2, _iterator4, _step4, _ret4, output, clean;
+				var type, options, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, opt, _type, files, _type2, tool, linker, link, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _loop2, _iterator5, _step5, _ret4, output, clean;
 
 				return regeneratorRuntime.wrap(function _callee2$(_context2) {
 					while (1) {
@@ -715,39 +715,88 @@ var Target = exports.Target = function () {
 
 								Object.assign(this.directories, target.directories);
 
-								if (target.options) {
-									for (type in target.options.compiler) {
-										options = new Options({ prefix: '-' });
-
-										options.append(target.options.compiler[type]);
-										this.options.compiler.set(type, options);
-									}
-
-									this.options.assembler.append(target.options.assembler);
-									this.options.linker.append(target.options.linker);
-									this.options.scripts.append(target.scripts);
-									this.options.machine.append(target.machine);
-									this.options.definitions.append(target.definitions);
-
-									if (target.libraries) {
-										this.options.libraries.static.append(target.libraries.static);
-										this.options.libraries.shared.append(target.libraries.shared);
-									}
-
-									if (target.search) {
-										this.options.search.includes.append(target.search.includes);
-										this.options.search.libraries.append(target.search.libraries);
-										this.options.search.scripts.append(target.search.scripts);
-									}
-
-									if (target.options.raw) {
-										if (target.options.raw.linker) {
-											for (opt in target.options.raw.linker) {
-												this.options.linker.raw.add(opt);
-											}
-										}
-									}
+								if (!target.options) {
+									_context2.next = 37;
+									break;
 								}
+
+								for (type in target.options.compiler) {
+									options = new Options({ prefix: '-' });
+
+									options.append(target.options.compiler[type]);
+									this.options.compiler.set(type, options);
+								}
+
+								this.options.assembler.append(target.options.assembler);
+								this.options.linker.append(target.options.linker);
+								this.options.scripts.append(target.scripts);
+								this.options.machine.append(target.machine);
+								this.options.definitions.append(target.definitions);
+
+								if (target.libraries) {
+									this.options.libraries.static.append(target.libraries.static);
+									this.options.libraries.shared.append(target.libraries.shared);
+								}
+
+								if (target.search) {
+									this.options.search.includes.append(target.search.includes);
+									this.options.search.libraries.append(target.search.libraries);
+									this.options.search.scripts.append(target.search.scripts);
+								}
+
+								if (!target.options.raw) {
+									_context2.next = 37;
+									break;
+								}
+
+								if (!target.options.raw.linker) {
+									_context2.next = 37;
+									break;
+								}
+
+								_iteratorNormalCompletion4 = true;
+								_didIteratorError4 = false;
+								_iteratorError4 = undefined;
+								_context2.prev = 21;
+
+								for (_iterator4 = target.options.raw.linker[Symbol.iterator](); !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+									opt = _step4.value;
+
+									this.options.linker.raw.add(opt);
+								}_context2.next = 29;
+								break;
+
+							case 25:
+								_context2.prev = 25;
+								_context2.t0 = _context2['catch'](21);
+								_didIteratorError4 = true;
+								_iteratorError4 = _context2.t0;
+
+							case 29:
+								_context2.prev = 29;
+								_context2.prev = 30;
+
+								if (!_iteratorNormalCompletion4 && _iterator4.return) {
+									_iterator4.return();
+								}
+
+							case 32:
+								_context2.prev = 32;
+
+								if (!_didIteratorError4) {
+									_context2.next = 35;
+									break;
+								}
+
+								throw _iteratorError4;
+
+							case 35:
+								return _context2.finish(32);
+
+							case 36:
+								return _context2.finish(29);
+
+							case 37:
 
 								target.extensions = target.extension || {};
 								target.extensions.c = target.extensions.c || ['c'];
@@ -770,10 +819,10 @@ var Target = exports.Target = function () {
 								this.sources.include(target.sources.include);
 								this.sources.exclude(target.sources.exclude);
 
-								_context2.next = 23;
+								_context2.next = 52;
 								return this.sources.files();
 
-							case 23:
+							case 52:
 								files = this.sources.organize(this.extensions);
 
 
@@ -826,16 +875,16 @@ var Target = exports.Target = function () {
 
 								if (this.depends.size) link.append(this.depends);
 
-								_iteratorNormalCompletion4 = true;
-								_didIteratorError4 = false;
-								_iteratorError4 = undefined;
-								_context2.prev = 43;
+								_iteratorNormalCompletion5 = true;
+								_didIteratorError5 = false;
+								_iteratorError5 = undefined;
+								_context2.prev = 72;
 
 								_loop2 = function _loop2() {
-									var _step4$value = _slicedToArray(_step4.value, 2);
+									var _step5$value = _slicedToArray(_step5.value, 2);
 
-									var type = _step4$value[0];
-									var tool = _step4$value[1];
+									var type = _step5$value[0];
+									var tool = _step5$value[1];
 
 									if (!files.has(type)) return 'continue';
 
@@ -852,63 +901,63 @@ var Target = exports.Target = function () {
 									_this4.rules.add(rule);
 								};
 
-								_iterator4 = this.tools[Symbol.iterator]();
+								_iterator5 = this.tools[Symbol.iterator]();
 
-							case 46:
-								if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
-									_context2.next = 53;
+							case 75:
+								if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
+									_context2.next = 82;
 									break;
 								}
 
 								_ret4 = _loop2();
 
 								if (!(_ret4 === 'continue')) {
-									_context2.next = 50;
+									_context2.next = 79;
 									break;
 								}
 
-								return _context2.abrupt('continue', 50);
+								return _context2.abrupt('continue', 79);
 
-							case 50:
-								_iteratorNormalCompletion4 = true;
-								_context2.next = 46;
+							case 79:
+								_iteratorNormalCompletion5 = true;
+								_context2.next = 75;
 								break;
 
-							case 53:
-								_context2.next = 59;
+							case 82:
+								_context2.next = 88;
 								break;
 
-							case 55:
-								_context2.prev = 55;
-								_context2.t0 = _context2['catch'](43);
-								_didIteratorError4 = true;
-								_iteratorError4 = _context2.t0;
+							case 84:
+								_context2.prev = 84;
+								_context2.t1 = _context2['catch'](72);
+								_didIteratorError5 = true;
+								_iteratorError5 = _context2.t1;
 
-							case 59:
-								_context2.prev = 59;
-								_context2.prev = 60;
+							case 88:
+								_context2.prev = 88;
+								_context2.prev = 89;
 
-								if (!_iteratorNormalCompletion4 && _iterator4.return) {
-									_iterator4.return();
+								if (!_iteratorNormalCompletion5 && _iterator5.return) {
+									_iterator5.return();
 								}
 
-							case 62:
-								_context2.prev = 62;
+							case 91:
+								_context2.prev = 91;
 
-								if (!_didIteratorError4) {
-									_context2.next = 65;
+								if (!_didIteratorError5) {
+									_context2.next = 94;
 									break;
 								}
 
-								throw _iteratorError4;
+								throw _iteratorError5;
 
-							case 65:
-								return _context2.finish(62);
+							case 94:
+								return _context2.finish(91);
 
-							case 66:
-								return _context2.finish(59);
+							case 95:
+								return _context2.finish(88);
 
-							case 67:
+							case 96:
 
 								if (this.objects.size) {
 									link.append(this.objects);
@@ -957,22 +1006,22 @@ var Target = exports.Target = function () {
 								this.rules.add(clean);
 
 								log(this);
-								_context2.next = 80;
+								_context2.next = 109;
 								break;
 
-							case 76:
-								_context2.prev = 76;
-								_context2.t1 = _context2['catch'](0);
+							case 105:
+								_context2.prev = 105;
+								_context2.t2 = _context2['catch'](0);
 
-								log(_context2.t1);
-								throw _context2.t1;
+								log(_context2.t2);
+								throw _context2.t2;
 
-							case 80:
+							case 109:
 							case 'end':
 								return _context2.stop();
 						}
 					}
-				}, _callee2, this, [[0, 76], [43, 55, 59, 67], [60,, 62, 66]]);
+				}, _callee2, this, [[0, 105], [21, 25, 29, 37], [30,, 32, 36], [72, 84, 88, 96], [89,, 91, 95]]);
 			}));
 
 			function parse(_x7, _x8) {
