@@ -492,7 +492,7 @@ export class Target {
 				target.tools.c = 'gcc';
 
 			if(!target.tools.asm)
-				target.tools.asm = 'gcc -x --assembler-with-cpp';
+				target.tools.asm = 'gcc -x assembler-with-cpp';
 
 			if(!target.tools['c++'])
 				target.tools['c++'] = 'g++';

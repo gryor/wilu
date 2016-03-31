@@ -773,7 +773,7 @@ var Target = exports.Target = function () {
 
 								if (!target.tools.c) target.tools.c = 'gcc';
 
-								if (!target.tools.asm) target.tools.asm = 'gcc -x --assembler-with-cpp';
+								if (!target.tools.asm) target.tools.asm = 'gcc -x assembler-with-cpp';
 
 								if (!target.tools['c++']) target.tools['c++'] = 'g++';
 
