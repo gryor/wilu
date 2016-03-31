@@ -271,7 +271,9 @@ var Tool = exports.Tool = function () {
 		key: 'toString',
 		value: function toString() {
 			try {
-				return [this.name].concat(_toConsumableArray([].concat(_toConsumableArray(this.options)).map(function (opt) {
+				return [this.name].concat(_toConsumableArray([].concat(_toConsumableArray(this.options)).filter(function (item) {
+					return !!item;
+				}).map(function (opt) {
 					return opt.toString();
 				}))).filter(function (item) {
 					return item && item.length > 0;
