@@ -3,369 +3,13 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+exports.Makefile = exports.Target = exports.Sources = exports.LinkRule = exports.CompileRule = exports.Tool = exports.Options = exports.Version = undefined;
 
-var sources = function () {
-	var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(info) {
-		var _this = this;
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-		var _loop, name, _ret;
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-		return regeneratorRuntime.wrap(function _callee2$(_context2) {
-			while (1) {
-				switch (_context2.prev = _context2.next) {
-					case 0:
-						_context2.prev = 0;
-						_loop = regeneratorRuntime.mark(function _callee(name) {
-							var target, src, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, exclude, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _loop2, _iterator2, _step2, type;
-
-							return regeneratorRuntime.wrap(function _callee$(_context) {
-								while (1) {
-									switch (_context.prev = _context.next) {
-										case 0:
-											target = info.build[name];
-
-											target.sources = target.sources || {};
-											src = target.sources;
-
-											src.extensions = src.extensions || { c: new Set(['c']), 'c++': new Set(['cc', 'cpp']), asm: new Set(['s', 'S']) };
-
-											if (src.path === undefined) src.path = 'src';
-
-											if (src.subpath) {
-												src.path = _path2.default.join(src.path, src.subpath);
-												delete src.subpath;
-											}
-
-											if (src.include === undefined) src.include = new Set(['**/*.c']);
-
-											if (!(isSet(src.include) && src.path !== null)) {
-												_context.next = 60;
-												break;
-											}
-
-											if (!isSet(src.exclude)) {
-												_context.next = 28;
-												break;
-											}
-
-											_iteratorNormalCompletion = true;
-											_didIteratorError = false;
-											_iteratorError = undefined;
-											_context.prev = 12;
-
-											for (_iterator = src.exclude[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-												exclude = _step.value;
-
-												src.include.delete(exclude);
-											}
-											_context.next = 20;
-											break;
-
-										case 16:
-											_context.prev = 16;
-											_context.t0 = _context['catch'](12);
-											_didIteratorError = true;
-											_iteratorError = _context.t0;
-
-										case 20:
-											_context.prev = 20;
-											_context.prev = 21;
-
-											if (!_iteratorNormalCompletion && _iterator.return) {
-												_iterator.return();
-											}
-
-										case 23:
-											_context.prev = 23;
-
-											if (!_didIteratorError) {
-												_context.next = 26;
-												break;
-											}
-
-											throw _iteratorError;
-
-										case 26:
-											return _context.finish(23);
-
-										case 27:
-											return _context.finish(20);
-
-										case 28:
-											_context.next = 30;
-											return Promise.all([].concat(_toConsumableArray(src.include)).map(function (pattern) {
-												return aglob(pattern, { cwd: src.path });
-											}));
-
-										case 30:
-											src.include = _context.sent;
-
-											src.include = src.include.reduce(function (all, current) {
-												return [].concat(_toConsumableArray(all), _toConsumableArray(current));
-											});
-
-											if (!isSet(src.exclude)) {
-												_context.next = 53;
-												break;
-											}
-
-											_iteratorNormalCompletion2 = true;
-											_didIteratorError2 = false;
-											_iteratorError2 = undefined;
-											_context.prev = 36;
-
-											_loop2 = function _loop2() {
-												var exclude = _step2.value;
-
-												src.include = src.include.filter(function (include) {
-													return !(0, _minimatch2.default)(include, exclude);
-												});
-											};
-
-											for (_iterator2 = src.exclude[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-												_loop2();
-											}_context.next = 45;
-											break;
-
-										case 41:
-											_context.prev = 41;
-											_context.t1 = _context['catch'](36);
-											_didIteratorError2 = true;
-											_iteratorError2 = _context.t1;
-
-										case 45:
-											_context.prev = 45;
-											_context.prev = 46;
-
-											if (!_iteratorNormalCompletion2 && _iterator2.return) {
-												_iterator2.return();
-											}
-
-										case 48:
-											_context.prev = 48;
-
-											if (!_didIteratorError2) {
-												_context.next = 51;
-												break;
-											}
-
-											throw _iteratorError2;
-
-										case 51:
-											return _context.finish(48);
-
-										case 52:
-											return _context.finish(45);
-
-										case 53:
-
-											src.include = src.include.map(function (include) {
-												return _path2.default.join(src.path, include);
-											});
-											src.include = [].concat(_toConsumableArray(new Set(src.include)));
-											src.path = null;
-
-											if (!(src.include.size === 0)) {
-												_context.next = 58;
-												break;
-											}
-
-											return _context.abrupt('return', 'continue');
-
-										case 58:
-
-											for (type in src.extensions) {
-												src.extensions[type] = new Set([].concat(_toConsumableArray(src.extensions[type])).map(function (ext) {
-													return _minimatch2.default.match(src.include, '*.' + ext, { matchBase: true });
-												}).reduce(function (a, b) {
-													return [].concat(_toConsumableArray(a), _toConsumableArray(b));
-												}));
-
-												if (src.extensions[type].size === 0) delete src.extensions[type];
-											}
-
-											target.sources = src.extensions;
-
-										case 60:
-										case 'end':
-											return _context.stop();
-									}
-								}
-							}, _callee, _this, [[12, 16, 20, 28], [21,, 23, 27], [36, 41, 45, 53], [46,, 48, 52]]);
-						});
-						_context2.t0 = regeneratorRuntime.keys(info.build);
-
-					case 3:
-						if ((_context2.t1 = _context2.t0()).done) {
-							_context2.next = 11;
-							break;
-						}
-
-						name = _context2.t1.value;
-						return _context2.delegateYield(_loop(name), 't2', 6);
-
-					case 6:
-						_ret = _context2.t2;
-
-						if (!(_ret === 'continue')) {
-							_context2.next = 9;
-							break;
-						}
-
-						return _context2.abrupt('continue', 3);
-
-					case 9:
-						_context2.next = 3;
-						break;
-
-					case 11:
-						_context2.next = 16;
-						break;
-
-					case 13:
-						_context2.prev = 13;
-						_context2.t3 = _context2['catch'](0);
-						throw _context2.t3;
-
-					case 16:
-					case 'end':
-						return _context2.stop();
-				}
-			}
-		}, _callee2, this, [[0, 13]]);
-	}));
-
-	return function sources(_x3) {
-		return ref.apply(this, arguments);
-	};
-}();
-
-var makefile = function () {
-	var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee3(info) {
-		var out, outdirs, name, _target, compilers, linker, _src, targetObjects, type, objects, compiler, flags, compile, builtObjects, dirs, mkdirs, link;
-
-		return regeneratorRuntime.wrap(function _callee3$(_context3) {
-			while (1) {
-				switch (_context3.prev = _context3.next) {
-					case 0:
-						_context3.prev = 0;
-
-						if (info.build) {
-							_context3.next = 3;
-							break;
-						}
-
-						throw new Error('package.json:build is not defined');
-
-					case 3:
-
-						targets(info);
-						_context3.next = 6;
-						return sources(info);
-
-					case 6:
-						out = [];
-						outdirs = new Set();
-						_context3.t0 = regeneratorRuntime.keys(info.build);
-
-					case 9:
-						if ((_context3.t1 = _context3.t0()).done) {
-							_context3.next = 30;
-							break;
-						}
-
-						name = _context3.t1.value;
-						_target = info.build[name];
-
-
-						initTarget(info, _target);
-
-						compilers = _target.compilers;
-						linker = _target.toolset + (_target.sources['c++'] ? _target.compilers['c++'] : _target.compilers['c']);
-						_src = _target.sources;
-						targetObjects = [];
-
-
-						for (type in _src) {
-							objects = suffix(_src[type], '.o');
-
-							targetObjects = targetObjects.concat(objects);
-							compiler = _target.toolset + _target.compilers[type];
-							flags = _target.compiler.flags.always;
-
-
-							if (_target.compiler.flags[type]) flags += ' ' + _target.compiler.flags[type];
-
-							compile = [objects.join(' ') + ': %.o: %\n\t@' + compiler, flags, _target.machine, _target.definitions, _target.search.includes, _target.assembler.flags, '-c $< -o', _path2.default.join(_target.objdirectory, name, '$@')];
-
-
-							compile = compile.filter(function (e) {
-								return !(!e || e.length === 0);
-							}).join(' ');
-							out.push(compile);
-						}
-
-						if (!(targetObjects.length === 0)) {
-							_context3.next = 20;
-							break;
-						}
-
-						return _context3.abrupt('continue', 9);
-
-					case 20:
-
-						targetObjects = [].concat(_toConsumableArray(new Set(targetObjects)));
-
-						outdirs.add(_target.directory);
-
-						builtObjects = prefix(targetObjects, _path2.default.join(_target.objdirectory, name) + _path2.default.sep);
-						dirs = [_target.subdirectory].concat(_toConsumableArray(new Set(builtObjects.map(function (o) {
-							return _path2.default.dirname(o);
-						})))).join(' ');
-						mkdirs = [dirs + ':\n\t@mkdir -p ' + dirs];
-
-						// linker erikseen, kerää tiedot kaikista kielistä!
-
-						link = [name + ':', dirs, targetObjects.join(' ') + '\n\t@' + linker, _target.linker.flags, _target.linker.scripts, _target.machine, _target.definitions, _target.libraries, _target.search.libraries, _target.search.scripts, builtObjects.join(' '), '-o', _path2.default.join(_target.subdirectory, _target.name)];
-
-
-						link = link.filter(function (e) {
-							return !(!e || e.length === 0);
-						}).join(' ');
-						out.push(mkdirs, link);
-						_context3.next = 9;
-						break;
-
-					case 30:
-
-						if (outdirs.size) out.push('clean:\n\t-@rm -rf ' + [].concat(_toConsumableArray(outdirs)).join(' '));
-
-						out = out.filter(function (e) {
-							return !(!e || e.length === 0);
-						});
-						out = out.join('\n\n');
-
-						if (out.length) out += '\n';
-
-						return _context3.abrupt('return', out);
-
-					case 37:
-						_context3.prev = 37;
-						_context3.t2 = _context3['catch'](0);
-						throw _context3.t2;
-
-					case 40:
-					case 'end':
-						return _context3.stop();
-				}
-			}
-		}, _callee3, this, [[0, 37]]);
-	}));
-
-	return function makefile(_x4) {
-		return ref.apply(this, arguments);
-	};
-}();
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 var _debug = require('debug');
 
@@ -383,9 +27,15 @@ var _minimatch = require('minimatch');
 
 var _minimatch2 = _interopRequireDefault(_minimatch);
 
+var _fs = require('fs');
+
+var _fs2 = _interopRequireDefault(_fs);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { return step("next", value); }, function (err) { return step("throw", err); }); } } return step("next"); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -399,21 +49,40 @@ function isSet(value) {
 	return Object.prototype.toString.call(value) === Object.prototype.toString.call(Set.prototype);
 }
 
-function parseObject(obj) {
-	var iterating = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
-
+function writeFile(path, content) {
 	try {
-		for (var property in obj) {
-			if (Array.isArray(obj[property])) {
-				obj[property] = new Set(obj[property]);
-			} else if (obj[property] === null) {
-				delete obj[property];
-			} else if (property === '+' && !iterating) {
-				continue;
-			} else if (isObject(obj[property])) {
-				obj[property] = parseObject(obj[property], true);
-			}
-		}
+		return new Promise(function (success, fail) {
+			_fs2.default.writeFile(path, content, function (error) {
+				return error ? fail(error) : success();
+			});
+		});
+	} catch (e) {
+		throw e;
+	}
+}
+
+var _cache_aglob = new Map();
+
+function aglob(pattern, options) {
+	try {
+		var _ret = function () {
+			var cacheKey = JSON.stringify({ pattern: pattern, options: options });
+
+			if (_cache_aglob.has(cacheKey)) return {
+					v: Promise.resolve(_cache_aglob.get(cacheKey))
+				};else return {
+					v: new Promise(function (success, fail) {
+						(0, _glob2.default)(pattern, options, function (error, results) {
+							if (error) fail(error);else {
+								_cache_aglob.set(cacheKey, results);
+								success(results);
+							}
+						});
+					})
+				};
+		}();
+
+		if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
 	} catch (e) {
 		throw e;
 	}
@@ -428,17 +97,11 @@ function reduceObjects(parent, child) {
 				continue;
 			} else if (child[property] === undefined) {
 				child[property] = parent[property];
-			} else if (child[property] === null) {
-				delete child[property];
-			} else if (isSet(parent[property]) && Array.isArray(child[property])) {
-				child[property] = new Set([].concat(_toConsumableArray(parent[property]), _toConsumableArray(child[property])));
+			} else if (Array.isArray(parent[property]) && Array.isArray(child[property])) {
+				child[property] = [].concat(_toConsumableArray(parent[property]), _toConsumableArray(child[property]));
 			} else if (isObject(parent[property]) && isObject(child[property])) {
 				reduceObjects(parent[property], child[property], true);
 			}
-		}
-
-		for (var _property in child) {
-			if (Array.isArray(child[_property])) child[_property] = new Set(child[_property]);
 		}
 	} catch (e) {
 		throw e;
@@ -447,7 +110,6 @@ function reduceObjects(parent, child) {
 
 function reduce(parent) {
 	try {
-		parseObject(parent);
 		var childs = parent['+'];
 
 		for (var name in childs) {
@@ -484,120 +146,994 @@ function combine(parent, childs) {
 	}
 }
 
-function targets(info) {
-	reduce(info.build);
-	combine(info.build);
-	if (info.build['+']) info.build = info.build['+'];
-}
+var Version = exports.Version = function () {
+	function Version(version) {
+		_classCallCheck(this, Version);
 
-function aglob(pattern, options) {
-	try {
-		return new Promise(function (success, fail) {
-			(0, _glob2.default)(pattern, options, function (error, results) {
-				if (error) fail(error);else success(results);
-			});
-		});
-	} catch (e) {
-		throw e;
-	}
-}
+		this.major = 0;
+		this.minor = 0;
+		this.patch = 1;
 
-function prefix(set, text) {
-	return [].concat(_toConsumableArray(set)).map(function (item) {
-		return text + item;
-	});
-}
+		if (version) {
+			;
 
-function suffix(set, text) {
-	return [].concat(_toConsumableArray(set)).map(function (item) {
-		return item + text;
-	});
-}
+			var _version$split = version.split('.');
 
-function initTarget(info, target) {
-	try {
-		target.name = target.name || info.name || 'app';
-		target.version = target.version || info.version || '0.0.1';
-		target.directory = target.directory || 'build';
-		target.objdirectory = target.objdirectory || 'obj';
-		target.subdirectory = target.subdirectory || 'bin';
-		target.compilers = target.compilers || {};
-		target.compiler = target.compiler || {};
-		target.compiler.flags = target.compiler.flags || {};
-		target.compiler.flags.always = target.compiler.flags.always || new Set();
-		target.machine = target.machine || new Set();
-		target.definitions = target.definitions || new Set();
-		target.linker = target.linker || {};
-		target.linker.flags = target.linker.flags || new Set();
-		target.linker.scripts = target.linker.scripts || new Set();
-		target.assembler = target.assembler || {};
-		target.assembler.flags = target.assembler.flags || new Set();
-		target.libraries = target.libraries || new Set();
-		target.search = target.search || {};
-		target.search.includes = target.search.includes || new Set();
-		target.search.libraries = target.search.libraries || new Set();
-		target.search.scripts = target.search.scripts || new Set();
-		target.objdirectory = _path2.default.join(target.directory, target.objdirectory);
-		target.subdirectory = _path2.default.join(target.directory, target.subdirectory);
+			var _version$split2 = _slicedToArray(_version$split, 3);
 
-		if (target.toolset && target.toolset.length) target.toolset += '-';else target.toolset = '';
-
-		if (target.compilers.c === undefined) target.compilers.c = 'gcc';
-
-		if (target.compilers['c++'] === undefined) target.compilers['c++'] = 'g++';
-
-		if (target.compilers.asm === undefined) target.compilers.asm = 'gcc -x --assembler-with-cpp';
-
-		if (isSet(target.machine)) target.machine = prefix(target.machine, '-m').join(' ');
-		if (isSet(target.definitions)) target.definitions = prefix(target.definitions, '-D').join(' ');
-		if (isSet(target.linker.flags)) target.linker.flags = prefix(target.linker.flags, '-Wl,-').join(' ');
-		if (isSet(target.linker.scripts)) target.linker.scripts = prefix(target.linker.scripts, '-T').join(' ');
-		if (isSet(target.assembler.flags)) target.assembler.flags = prefix(target.assembler.flags, '-Wa,-').join(' ');
-		if (isSet(target.libraries)) target.libraries = prefix(target.libraries, '-l').join(' ');
-		if (isSet(target.search.includes)) target.search.includes = prefix(target.search.includes, '-I').join(' ');
-		if (isSet(target.search.libraries)) target.search.libraries = prefix(target.search.libraries, '-L').join(' ');
-		if (isSet(target.search.scripts)) target.search.scripts = prefix(target.search.scripts, '-Wl,-L').join(' ');
-
-		for (var type in target.compiler.flags) {
-			if (isSet(target.compiler.flags[type])) target.compiler.flags[type] = prefix(target.compiler.flags[type], '-').join(' ');
+			this.major = _version$split2[0];
+			this.minor = _version$split2[1];
+			this.patch = _version$split2[2];
 		}
-	} catch (e) {
-		throw e;
 	}
-}
 
-exports.default = makefile;
+	_createClass(Version, [{
+		key: 'toString',
+		value: function toString() {
+			return this.major + '.' + this.minor + '.' + this.patch;
+		}
+	}]);
+
+	return Version;
+}();
+
+var Options = exports.Options = function () {
+	function Options() {
+		var _ref = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+		var preline = _ref.preline;
+		var prefix = _ref.prefix;
+		var suffix = _ref.suffix;
+		var join = _ref.join;
+
+		_classCallCheck(this, Options);
+
+		this.list = new Set();
+		this.raw = new Set();
+		this.preline = '';
+		this.prefix = '';
+		this.suffix = '';
+		this.join = ' ';
+
+		if (prefix) this.prefix = prefix;
+
+		if (suffix) this.suffix = suffix;
+
+		if (join) this.join = join;
+
+		if (preline) this.preline = preline;
+
+		if (preline && join === undefined) this.join = ',';
+	}
+
+	_createClass(Options, [{
+		key: 'toString',
+		value: function toString() {
+			var _this = this;
+
+			try {
+				if (!this.raw.size && !this.list.size) return '';
+
+				var line = [].concat(_toConsumableArray(this.raw));
+
+				if (this.list.size) {
+					line = [].concat(_toConsumableArray(line), [this.preline + [].concat(_toConsumableArray(this.list)).map(function (item) {
+						return _this.prefix + item + _this.suffix;
+					}).join(this.join)]);
+				}
+
+				return line.join(' ');
+			} catch (e) {
+				throw e;
+			}
+		}
+	}, {
+		key: 'append',
+		value: function append(values) {
+			try {
+				if (values) this.list = new Set([].concat(_toConsumableArray(this.list), _toConsumableArray(values)));
+			} catch (e) {
+				throw e;
+			}
+		}
+	}, {
+		key: 'prepend',
+		value: function prepend(values) {
+			try {
+				if (values) this.list = new Set([].concat(_toConsumableArray(values), _toConsumableArray(this.list)));
+			} catch (e) {
+				throw e;
+			}
+		}
+	}]);
+
+	return Options;
+}();
+
+var Tool = exports.Tool = function () {
+	function Tool() {
+		var _ref2 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+		var name = _ref2.name;
+		var toolset = _ref2.toolset;
+
+		_classCallCheck(this, Tool);
+
+		this.name = '';
+		this.options = new Set();
+
+		if (name) this.name = name;
+
+		if (toolset) this.name = toolset + '-' + name;
+	}
+
+	_createClass(Tool, [{
+		key: 'toString',
+		value: function toString() {
+			try {
+				return [this.name].concat(_toConsumableArray([].concat(_toConsumableArray(this.options)).map(function (opt) {
+					return opt.toString();
+				}))).filter(function (item) {
+					return item && item.length > 0;
+				}).join(' ');
+			} catch (e) {
+				throw e;
+			}
+		}
+	}]);
+
+	return Tool;
+}();
+
+var CompileRule = exports.CompileRule = function () {
+	function CompileRule() {
+		var _ref3 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+		var extension = _ref3.extension;
+		var directory = _ref3.directory;
+		var src = _ref3.src;
+
+		_classCallCheck(this, CompileRule);
+
+		this.targets = new Set();
+		this.commands = new Set();
+		this.extension = null;
+		this.directory = null;
+		this.src = null;
+
+		if (extension) this.extension = extension;
+
+		if (directory) this.directory = directory;
+
+		if (src) this.src = src;
+	}
+
+	_createClass(CompileRule, [{
+		key: 'toString',
+		value: function toString() {
+			try {
+				return [].concat(_toConsumableArray(this.targets)).join(' ') + ': ' + _path2.default.join(this.directory, '%' + (this.extension ? '.' + this.extension + ': %' : ': ' + _path2.default.join(this.src, '%'))) + [].concat(_toConsumableArray(this.commands)).map(function (cmd) {
+					return '\n\t@' + cmd;
+				}).join('');
+			} catch (e) {
+				throw e;
+			}
+		}
+	}, {
+		key: 'append',
+		value: function append(values) {
+			try {
+				if (values) this.targets = new Set([].concat(_toConsumableArray(this.targets), _toConsumableArray(values)));
+			} catch (e) {
+				throw e;
+			}
+		}
+	}]);
+
+	return CompileRule;
+}();
+
+var LinkRule = exports.LinkRule = function () {
+	function LinkRule() {
+		var _ref4 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+		var name = _ref4.name;
+
+		_classCallCheck(this, LinkRule);
+
+		this.name = '';
+		this.depends = new Set();
+		this.commands = new Set();
+
+		if (name) this.name = name;
+	}
+
+	_createClass(LinkRule, [{
+		key: 'toString',
+		value: function toString() {
+			try {
+				return this.name + ': ' + [].concat(_toConsumableArray(this.depends)).join(' ') + [].concat(_toConsumableArray(this.commands)).map(function (cmd) {
+					return '\n\t@' + cmd;
+				}).join('');
+			} catch (e) {
+				throw e;
+			}
+		}
+	}, {
+		key: 'append',
+		value: function append(values) {
+			try {
+				if (values) this.depends = new Set([].concat(_toConsumableArray(this.depends), _toConsumableArray(values)));
+			} catch (e) {
+				throw e;
+			}
+		}
+	}]);
+
+	return LinkRule;
+}();
+
+var Sources = exports.Sources = function () {
+	function Sources() {
+		var _ref5 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+		var path = _ref5.path;
+
+		_classCallCheck(this, Sources);
+
+		this.includes = new Set();
+		this.excludes = new Set();
+		this.path = undefined;
+		this._cache = null;
+
+		if (path) this.path = path;
+	}
+
+	_createClass(Sources, [{
+		key: 'include',
+		value: function include(values) {
+			try {
+				if (values) this.includes = new Set([].concat(_toConsumableArray(this.includes), _toConsumableArray(values)));
+			} catch (e) {
+				throw e;
+			}
+		}
+	}, {
+		key: 'exclude',
+		value: function exclude(values) {
+			try {
+				if (values) this.excludes = new Set([].concat(_toConsumableArray(this.excludes), _toConsumableArray(values)));
+			} catch (e) {
+				throw e;
+			}
+		}
+	}, {
+		key: 'files',
+		value: function () {
+			var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+				var _this2 = this;
+
+				var _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, exclude, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _loop, _iterator2, _step2;
+
+				return regeneratorRuntime.wrap(function _callee$(_context) {
+					while (1) {
+						switch (_context.prev = _context.next) {
+							case 0:
+								_context.prev = 0;
+
+								if (!this._cache) {
+									_context.next = 3;
+									break;
+								}
+
+								return _context.abrupt('return', this._cache);
+
+							case 3:
+								if (this.includes.size) {
+									_context.next = 5;
+									break;
+								}
+
+								return _context.abrupt('return', new Set());
+
+							case 5:
+								_iteratorNormalCompletion = true;
+								_didIteratorError = false;
+								_iteratorError = undefined;
+								_context.prev = 8;
 
 
-if (require.main === module) {
-	_asyncToGenerator(regeneratorRuntime.mark(function _callee4() {
+								for (_iterator = this.excludes[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+									exclude = _step.value;
+
+									this.includes.delete(exclude);
+								}
+
+								_context.next = 16;
+								break;
+
+							case 12:
+								_context.prev = 12;
+								_context.t0 = _context['catch'](8);
+								_didIteratorError = true;
+								_iteratorError = _context.t0;
+
+							case 16:
+								_context.prev = 16;
+								_context.prev = 17;
+
+								if (!_iteratorNormalCompletion && _iterator.return) {
+									_iterator.return();
+								}
+
+							case 19:
+								_context.prev = 19;
+
+								if (!_didIteratorError) {
+									_context.next = 22;
+									break;
+								}
+
+								throw _iteratorError;
+
+							case 22:
+								return _context.finish(19);
+
+							case 23:
+								return _context.finish(16);
+
+							case 24:
+								_context.next = 26;
+								return Promise.all([].concat(_toConsumableArray(this.includes)).map(function (pattern) {
+									return aglob(pattern, { cwd: _this2.path });
+								}));
+
+							case 26:
+								this._cache = _context.sent;
+
+								this._cache = this._cache.reduce(function (all, current) {
+									return [].concat(_toConsumableArray(all), _toConsumableArray(current));
+								});
+
+								_iteratorNormalCompletion2 = true;
+								_didIteratorError2 = false;
+								_iteratorError2 = undefined;
+								_context.prev = 31;
+
+								_loop = function _loop() {
+									var exclude = _step2.value;
+
+									_this2._cache = _this2._cache.filter(function (file) {
+										return !(0, _minimatch2.default)(file, exclude);
+									});
+								};
+
+								for (_iterator2 = this.excludes[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+									_loop();
+								}_context.next = 40;
+								break;
+
+							case 36:
+								_context.prev = 36;
+								_context.t1 = _context['catch'](31);
+								_didIteratorError2 = true;
+								_iteratorError2 = _context.t1;
+
+							case 40:
+								_context.prev = 40;
+								_context.prev = 41;
+
+								if (!_iteratorNormalCompletion2 && _iterator2.return) {
+									_iterator2.return();
+								}
+
+							case 43:
+								_context.prev = 43;
+
+								if (!_didIteratorError2) {
+									_context.next = 46;
+									break;
+								}
+
+								throw _iteratorError2;
+
+							case 46:
+								return _context.finish(43);
+
+							case 47:
+								return _context.finish(40);
+
+							case 48:
+								this._cache = new Set(this._cache);
+
+								return _context.abrupt('return', this._cache);
+
+							case 52:
+								_context.prev = 52;
+								_context.t2 = _context['catch'](0);
+								throw _context.t2;
+
+							case 55:
+							case 'end':
+								return _context.stop();
+						}
+					}
+				}, _callee, this, [[0, 52], [8, 12, 16, 24], [17,, 19, 23], [31, 36, 40, 48], [41,, 43, 47]]);
+			}));
+
+			function files() {
+				return ref.apply(this, arguments);
+			}
+
+			return files;
+		}()
+	}, {
+		key: 'organize',
+		value: function organize(rules) {
+			var _this3 = this;
+
+			try {
+				var result = new Map();
+
+				if (this._cache) {
+					var _iteratorNormalCompletion3 = true;
+					var _didIteratorError3 = false;
+					var _iteratorError3 = undefined;
+
+					try {
+						for (var _iterator3 = rules[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+							var _step3$value = _slicedToArray(_step3.value, 2);
+
+							var type = _step3$value[0];
+							var exts = _step3$value[1];
+
+							var matches = new Set([].concat(_toConsumableArray(exts)).map(function (ext) {
+								return _minimatch2.default.match([].concat(_toConsumableArray(_this3._cache)), '*.' + ext, { matchBase: true });
+							}).reduce(function (a, b) {
+								return [].concat(_toConsumableArray(a), _toConsumableArray(b));
+							}));
+
+							if (matches.size) result.set(type, matches);
+						}
+					} catch (err) {
+						_didIteratorError3 = true;
+						_iteratorError3 = err;
+					} finally {
+						try {
+							if (!_iteratorNormalCompletion3 && _iterator3.return) {
+								_iterator3.return();
+							}
+						} finally {
+							if (_didIteratorError3) {
+								throw _iteratorError3;
+							}
+						}
+					}
+				}
+
+				return result;
+			} catch (e) {
+				throw e;
+			}
+		}
+	}, {
+		key: 'toString',
+		value: function toString() {
+			try {
+				if (!this._cache) return '';
+
+				return [].concat(_toConsumableArray(this._cache)).join(' ');
+			} catch (e) {
+				throw e;
+			}
+		}
+	}]);
+
+	return Sources;
+}();
+
+var Target = exports.Target = function () {
+	function Target() {
+		_classCallCheck(this, Target);
+
+		this.target = '';
+		this.name = '';
+		this.libname = '';
+		this.version = new Version('0.0.1');
+		this.library = false;
+		this.shared = false;
+		this.directories = {
+			base: 'build',
+			output: 'bin',
+			objects: 'obj'
+		};
+		this.options = {
+			compiler: new Map(),
+			assembler: new Options({ preline: '-Wa,', prefix: '-' }),
+			linker: new Options({ preline: '-Wl,', prefix: '-' }),
+			scripts: new Options({ prefix: '-T' }),
+			machine: new Options({ prefix: '-m' }),
+			definitions: new Options({ prefix: '-D' }),
+			libraries: {
+				static: new Options({ suffix: '.a' }),
+				shared: new Options({ prefix: '-l' })
+			},
+			search: {
+				includes: new Options({ prefix: '-I' }),
+				libraries: new Options({ prefix: '-L' }),
+				scripts: new Options({ preline: '-Wl,', prefix: '-L' })
+			}
+		};
+		this.extensions = new Map();
+		this.depends = new Set();
+		this.sources = new Sources();
+		this.tools = new Map();
+		this.linker = null;
+		this.rules = new Set();
+		this.objects = new Set();
+	}
+
+	_createClass(Target, [{
+		key: 'parse',
+		value: function () {
+			var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(name, target) {
+				var _this4 = this;
+
+				var type, options, _type, files, _type2, tool, linker, link, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _loop2, _iterator4, _step4, _ret4, output, clean;
+
+				return regeneratorRuntime.wrap(function _callee2$(_context2) {
+					while (1) {
+						switch (_context2.prev = _context2.next) {
+							case 0:
+								_context2.prev = 0;
+
+								log({ name: name, target: target });
+
+								this.target = name;
+								this.name = target.name || 'app';
+
+								if (target.version) this.version = new Version(target.version);
+
+								if (target.library) {
+									this.library = true;
+									this.shared = !!target.shared;
+
+									if (this.shared) {
+										this.libname = 'lib' + this.name + '.so.' + this.version;
+										this.options.linker.raw.add('-shared');
+										this.options.linker.raw.add('-fPIC');
+										this.options.linker.list.add('soname,lib' + this.name + '.so.' + this.version.major);
+									} else {
+										this.name += '.a';
+										this.options.linker = new Options();
+										this.options.linker.raw.add('rcs');
+										this.linker = new Tool({ name: 'ar', toolset: target.toolset });
+									}
+								}
+
+								Object.assign(this.directories, target.directories);
+
+								if (target.options) {
+									for (type in target.options.compiler) {
+										options = new Options({ prefix: '-' });
+
+										options.append(target.options.compiler[type]);
+										this.options.compiler.set(type, options);
+									}
+
+									this.options.assembler.append(target.options.assembler);
+									this.options.linker.append(target.options.linker);
+									this.options.scripts.append(target.scripts);
+									this.options.machine.append(target.machine);
+									this.options.definitions.append(target.definitions);
+
+									if (target.libraries) {
+										this.options.libraries.static.append(target.libraries.static);
+										this.options.libraries.shared.append(target.libraries.shared);
+									}
+
+									if (target.search) {
+										this.options.search.includes.append(target.search.includes);
+										this.options.search.libraries.append(target.search.libraries);
+										this.options.search.scripts.append(target.search.scripts);
+									}
+								}
+
+								target.extensions = target.extension || {};
+								target.extensions.c = target.extensions.c || ['c'];
+								target.extensions.asm = target.extensions.asm || ['s', 'S'];
+								target.extensions['c++'] = target.extensions['c++'] || ['cc', 'cpp'];
+								target.extensions.copy = target.extensions.copy || ['h', 'hpp'];
+
+								for (_type in target.extensions) {
+									this.extensions.set(_type, new Set(target.extensions[_type]));
+								}
+
+								if (target.depends) this.depends = new Set(target.depends);
+
+								target.sources = target.sources || {};
+								target.sources.path = target.sources.path || 'src';
+
+								if (target.sources.subpath) target.sources.path = _path2.default.join(target.sources.path, target.sources.subpath);
+
+								this.sources.path = target.sources.path;
+								this.sources.include(target.sources.include);
+								this.sources.exclude(target.sources.exclude);
+
+								_context2.next = 23;
+								return this.sources.files();
+
+							case 23:
+								files = this.sources.organize(this.extensions);
+
+
+								target.tools = target.tools || {};
+
+								if (!target.tools.c) target.tools.c = 'gcc';
+
+								if (!target.tools.asm) target.tools.asm = 'gcc -x --assembler-with-cpp';
+
+								if (!target.tools['c++']) target.tools['c++'] = 'g++';
+
+								for (_type2 in target.tools) {
+									tool = new Tool({ name: target.tools[_type2], toolset: target.toolset });
+
+
+									if (this.options.compiler.has('always')) ;
+									tool.options.add(this.options.compiler.get('always'));
+
+									if (this.options.compiler.has(_type2)) ;
+									tool.options.add(this.options.compiler.get(_type2));
+
+									tool.options.add(this.options.machine);
+									tool.options.add(this.options.definitions);
+									tool.options.add(this.options.assembler);
+									tool.options.add(this.options.search.includes);
+
+									this.tools.set(_type2, tool);
+								}
+
+								if (!this.linker) {
+									linker = null;
+
+
+									if (files.has('c++')) linker = this.tools.get('c++').name;else if (files.has('c')) linker = this.tools.get('c').name;else linker = 'gcc';
+
+									this.linker = new Tool({ name: linker, toolset: target.toolset });
+								}
+
+								this.linker.options.add(this.options.linker);
+								this.linker.options.add(this.options.machine);
+								this.linker.options.add(this.options.definitions);
+								this.linker.options.add(this.options.scripts);
+								this.linker.options.add(this.options.libraries.shared);
+								this.linker.options.add(this.options.libraries.static);
+								this.linker.options.add(this.options.search.libraries);
+								this.linker.options.add(this.options.search.scripts);
+
+								link = new LinkRule({ name: this.target });
+
+
+								if (this.depends.size) link.append(this.depends);
+
+								_iteratorNormalCompletion4 = true;
+								_didIteratorError4 = false;
+								_iteratorError4 = undefined;
+								_context2.prev = 43;
+
+								_loop2 = function _loop2() {
+									var _step4$value = _slicedToArray(_step4.value, 2);
+
+									var type = _step4$value[0];
+									var tool = _step4$value[1];
+
+									if (!files.has(type)) return 'continue';
+
+									var directory = _path2.default.join(_this4.directories.base, _this4.directories.objects, _this4.target);
+									var objects = [].concat(_toConsumableArray(files.get(type))).map(function (file) {
+										return _path2.default.join(directory, _this4.sources.path, file + '.o');
+									});
+									_this4.objects = new Set([].concat(_toConsumableArray(_this4.objects), _toConsumableArray(objects)));
+
+									var rule = new CompileRule({ extension: 'o', directory: directory });
+									rule.append(objects);
+									rule.commands.add('mkdir -p ${dir $@}');
+									rule.commands.add(tool + ' -c $< -o $@');
+									_this4.rules.add(rule);
+								};
+
+								_iterator4 = this.tools[Symbol.iterator]();
+
+							case 46:
+								if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
+									_context2.next = 53;
+									break;
+								}
+
+								_ret4 = _loop2();
+
+								if (!(_ret4 === 'continue')) {
+									_context2.next = 50;
+									break;
+								}
+
+								return _context2.abrupt('continue', 50);
+
+							case 50:
+								_iteratorNormalCompletion4 = true;
+								_context2.next = 46;
+								break;
+
+							case 53:
+								_context2.next = 59;
+								break;
+
+							case 55:
+								_context2.prev = 55;
+								_context2.t0 = _context2['catch'](43);
+								_didIteratorError4 = true;
+								_iteratorError4 = _context2.t0;
+
+							case 59:
+								_context2.prev = 59;
+								_context2.prev = 60;
+
+								if (!_iteratorNormalCompletion4 && _iterator4.return) {
+									_iterator4.return();
+								}
+
+							case 62:
+								_context2.prev = 62;
+
+								if (!_didIteratorError4) {
+									_context2.next = 65;
+									break;
+								}
+
+								throw _iteratorError4;
+
+							case 65:
+								return _context2.finish(62);
+
+							case 66:
+								return _context2.finish(59);
+
+							case 67:
+
+								if (this.objects.size) {
+									link.append(this.objects);
+
+									link.commands.add(['mkdir -p', _path2.default.join(this.directories.base, this.directories.output)].join(' '));
+
+									output = _path2.default.join(this.directories.base, this.directories.output, this.library && this.shared ? this.libname : this.name);
+
+
+									if (this.library && !this.shared) link.commands.add([this.linker, output].concat(_toConsumableArray(this.objects)).join(' '));else link.commands.add([this.linker].concat(_toConsumableArray(this.objects), ['-o', output]).join(' '));
+
+									if (this.library && this.shared) {
+										link.commands.add(['ln -sf', this.libname, _path2.default.join(this.directories.base, this.directories.output, 'lib' + this.name + '.so')].join(' '));
+
+										link.commands.add(['ln -sf', this.libname, _path2.default.join(this.directories.base, this.directories.output, 'lib' + this.name + '.so.' + this.version.major)].join(' '));
+
+										link.commands.add(['ln -sf', this.libname, _path2.default.join(this.directories.base, this.directories.output, 'lib' + this.name + '.so.' + this.version.major + '.' + this.version.minor)].join(' '));
+									}
+								}
+
+								if (files.has('copy')) {
+									(function () {
+										var directory = _path2.default.join(_this4.directories.base, _this4.directories.output);
+										var rule = new CompileRule({ directory: directory, src: _this4.sources.path });
+										var targets = [].concat(_toConsumableArray(files.get('copy'))).map(function (file) {
+											return _path2.default.join(directory, file);
+										});
+										rule.append(targets);
+										rule.commands.add('mkdir -p ${dir $@}');
+										rule.commands.add(['cd', _this4.sources.path + '; cp --parents -t', _path2.default.relative(_path2.default.join(process.cwd(), _this4.sources.path), _path2.default.join(process.cwd(), directory)), '$*'].join(' '));
+
+										_this4.rules.add(rule);
+										link.append(targets);
+									})();
+								}
+
+								this.rules.add(link);
+
+								clean = new LinkRule({ name: 'clean-' + this.target });
+
+
+								if (files.size) {
+									clean.commands.add('rm -rf ' + this.directories.base);
+								}
+
+								this.rules.add(clean);
+
+								log(this);
+								_context2.next = 80;
+								break;
+
+							case 76:
+								_context2.prev = 76;
+								_context2.t1 = _context2['catch'](0);
+
+								log(_context2.t1);
+								throw _context2.t1;
+
+							case 80:
+							case 'end':
+								return _context2.stop();
+						}
+					}
+				}, _callee2, this, [[0, 76], [43, 55, 59, 67], [60,, 62, 66]]);
+			}));
+
+			function parse(_x7, _x8) {
+				return ref.apply(this, arguments);
+			}
+
+			return parse;
+		}()
+	}]);
+
+	return Target;
+}();
+
+var Makefile = exports.Makefile = function () {
+	function Makefile() {
+		_classCallCheck(this, Makefile);
+
+		this.targets = new Set();
+	}
+
+	_createClass(Makefile, [{
+		key: 'parse',
+		value: function () {
+			var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee3(build) {
+				var calls, name, target, rules, clean;
+				return regeneratorRuntime.wrap(function _callee3$(_context3) {
+					while (1) {
+						switch (_context3.prev = _context3.next) {
+							case 0:
+								_context3.prev = 0;
+
+								reduce(build);
+								combine(build);
+
+								if (!build['+']) {
+									_context3.next = 7;
+									break;
+								}
+
+								build = build['+'];
+								_context3.next = 8;
+								break;
+
+							case 7:
+								throw new Error('No targets');
+
+							case 8:
+								calls = [];
+
+								for (name in build) {
+									target = new Target();
+
+									this.targets.add(target);
+									calls.push(target.parse(name, build[name]));
+								}
+
+								_context3.next = 12;
+								return Promise.all(calls);
+
+							case 12:
+								rules = new Set([].concat(_toConsumableArray(this.targets)).map(function (_ref6) {
+									var rules = _ref6.rules;
+									return rules;
+								}).reduce(function (a, b) {
+									return [].concat(_toConsumableArray(a), _toConsumableArray(b));
+								}));
+								clean = new LinkRule({ name: 'clean' });
+
+								clean.append(Object.keys(build).map(function (target) {
+									return 'clean-' + target;
+								}));
+								rules.add(clean);
+
+								return _context3.abrupt('return', [['comma := ,', 'empty:=', 'space:= $(empty) $(empty)', 'destdir ?=', 'prefix ?= /usr', 'installdir := ${destdir}${prefix}', '.DEFAULT_GOAL := all'].join('\n')].concat(_toConsumableArray(rules)).join('\n\n'));
+
+							case 19:
+								_context3.prev = 19;
+								_context3.t0 = _context3['catch'](0);
+								throw _context3.t0;
+
+							case 22:
+							case 'end':
+								return _context3.stop();
+						}
+					}
+				}, _callee3, this, [[0, 19]]);
+			}));
+
+			function parse(_x9) {
+				return ref.apply(this, arguments);
+			}
+
+			return parse;
+		}()
+	}]);
+
+	return Makefile;
+}();
+
+exports.default = function () {
+	var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee4(build) {
+		var _makefile;
+
 		return regeneratorRuntime.wrap(function _callee4$(_context4) {
 			while (1) {
 				switch (_context4.prev = _context4.next) {
 					case 0:
 						_context4.prev = 0;
-						_context4.next = 3;
-						return makefile(require('./package.json'));
+						_makefile = new Makefile();
+						_context4.next = 4;
+						return _makefile.parse(build);
 
-					case 3:
+					case 4:
 						_context4.t0 = _context4.sent;
-						_context4.t1 = '\n' + _context4.t0;
-						log('makefile', _context4.t1);
+						_context4.next = 7;
+						return writeFile('makefile', _context4.t0);
+
+					case 7:
 						_context4.next = 12;
 						break;
 
-					case 8:
-						_context4.prev = 8;
-						_context4.t2 = _context4['catch'](0);
-
-						log(_context4.t2);
-						throw _context4.t2;
+					case 9:
+						_context4.prev = 9;
+						_context4.t1 = _context4['catch'](0);
+						throw _context4.t1;
 
 					case 12:
 					case 'end':
 						return _context4.stop();
 				}
 			}
-		}, _callee4, this, [[0, 8]]);
-	}))();
-}
+		}, _callee4, this, [[0, 9]]);
+	}));
+
+	function makefile(_x10) {
+		return ref.apply(this, arguments);
+	}
+
+	return makefile;
+}();
+
+if (require.main === module) _asyncToGenerator(regeneratorRuntime.mark(function _callee5() {
+	var makefile, out;
+	return regeneratorRuntime.wrap(function _callee5$(_context5) {
+		while (1) {
+			switch (_context5.prev = _context5.next) {
+				case 0:
+					_context5.prev = 0;
+					makefile = new Makefile();
+					_context5.next = 4;
+					return makefile.parse(require('./package.json').build);
+
+				case 4:
+					out = _context5.sent;
+
+					log(out);
+					require('fs').writeFile('makefile', out);
+					_context5.next = 13;
+					break;
+
+				case 9:
+					_context5.prev = 9;
+					_context5.t0 = _context5['catch'](0);
+
+					log(_context5.t0);
+					throw _context5.t0;
+
+				case 13:
+				case 'end':
+					return _context5.stop();
+			}
+		}
+	}, _callee5, this, [[0, 9]]);
+}))();
