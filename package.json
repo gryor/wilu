@@ -1,6 +1,6 @@
 {
   "name": "wilu",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "",
   "main": "app.js",
   "scripts": {
@@ -34,12 +34,11 @@
     "sources": {
       "path": "src"
     },
-	"variables": {
-		"custom-variable ": "custom-value",
-		"custom-variable ?": "custom-value",
-		"custom-variable :": "custom-value",
-		"custom-variable :": "${destdir}${prefix}"
-	},
+    "variables": {
+      "custom-variable ": "custom-value",
+      "custom-variable ?": "custom-value",
+      "custom-variable :": "${destdir}${prefix}"
+    },
     "+": {
       "all": {
         "depends": [
@@ -50,7 +49,6 @@
         ]
       },
       "release": {
-
         "sources": {
           "include": [
             "**/*.c"
