@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.Makefile = exports.Target = exports.Sources = exports.LinkRule = exports.CompileRule = exports.Tool = exports.Options = exports.Version = undefined;
+exports.Makefile = exports.Target = exports.Sources = exports.MakeVariables = exports.LinkRule = exports.CompileRule = exports.Tool = exports.Options = exports.Version = undefined;
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -373,6 +373,42 @@ var LinkRule = exports.LinkRule = function () {
 	}]);
 
 	return LinkRule;
+}();
+
+var MakeVariables = exports.MakeVariables = function () {
+	function MakeVariables() {
+		_classCallCheck(this, MakeVariables);
+
+		this.list = new Map();
+	}
+
+	_createClass(MakeVariables, [{
+		key: 'toString',
+		value: function toString() {
+			try {
+				return [].concat(_toConsumableArray(this.list)).map(function (v) {
+					return v[0] + '= ' + v[1];
+				}).join('\n');
+			} catch (e) {
+				throw e;
+			}
+		}
+	}, {
+		key: 'append',
+		value: function append(values) {
+			try {
+				if (!values) return;
+
+				for (var property in values) {
+					this.list.set(property, values[property]);
+				}
+			} catch (e) {
+				throw e;
+			}
+		}
+	}]);
+
+	return MakeVariables;
 }();
 
 var Sources = exports.Sources = function () {
@@ -1093,29 +1129,37 @@ var Makefile = exports.Makefile = function () {
 		key: 'parse',
 		value: function () {
 			var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee3(build) {
-				var calls, name, target, rules, clean;
+				var makeVariables, calls, name, target, rules, clean;
 				return regeneratorRuntime.wrap(function _callee3$(_context3) {
 					while (1) {
 						switch (_context3.prev = _context3.next) {
 							case 0:
 								_context3.prev = 0;
+								makeVariables = null;
+
+
+								if (build.variables) {
+									makeVariables = new MakeVariables();
+									makeVariables.append(build.variables);
+									delete build.variables;
+								}
 
 								reduce(build);
 								combine(build);
 
 								if (!build['+']) {
-									_context3.next = 7;
+									_context3.next = 9;
 									break;
 								}
 
 								build = build['+'];
-								_context3.next = 8;
+								_context3.next = 10;
 								break;
 
-							case 7:
+							case 9:
 								throw new Error('No targets');
 
-							case 8:
+							case 10:
 								calls = [];
 
 								for (name in build) {
@@ -1125,10 +1169,10 @@ var Makefile = exports.Makefile = function () {
 									calls.push(target.parse(name, build[name]));
 								}
 
-								_context3.next = 12;
+								_context3.next = 14;
 								return Promise.all(calls);
 
-							case 12:
+							case 14:
 								rules = new Set([].concat(_toConsumableArray(this.targets)).map(function (_ref6) {
 									var rules = _ref6.rules;
 									return rules;
@@ -1146,19 +1190,21 @@ var Makefile = exports.Makefile = function () {
 
 								rules.add(clean);
 
+								if (makeVariables) rules = new Set([makeVariables].concat(_toConsumableArray(rules)));
+
 								return _context3.abrupt('return', [['comma := ,', 'empty:=', 'space:= $(empty) $(empty)', 'destdir ?=', 'prefix ?= /usr', 'installdir := ${destdir}${prefix}', '.DEFAULT_GOAL := all'].join('\n')].concat(_toConsumableArray(rules)).join('\n\n'));
 
-							case 19:
-								_context3.prev = 19;
+							case 22:
+								_context3.prev = 22;
 								_context3.t0 = _context3['catch'](0);
 								throw _context3.t0;
 
-							case 22:
+							case 25:
 							case 'end':
 								return _context3.stop();
 						}
 					}
-				}, _callee3, this, [[0, 19]]);
+				}, _callee3, this, [[0, 22]]);
 			}));
 
 			function parse(_x9) {
