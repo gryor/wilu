@@ -278,6 +278,30 @@ export class LinkRule {
 	}
 }
 
+export class MakeVariables {
+	list = new Map();
+
+	toString() {
+		try {
+			return [...this.list].map((v) => (v[0] + '= ' + v[1])).join('\n');
+		} catch(e) {
+			throw e;
+		}
+	}
+
+	append(values) {
+		try {
+			if(!values)
+				return;
+
+			for(let property in values)
+				this.list.set(property, values[property]);
+		} catch(e) {
+			throw e;
+		}
+	}
+}
+
 export class Sources {
 	includes = new Set();
 	excludes = new Set();
@@ -649,6 +673,14 @@ export class Makefile {
 
 	async parse(build) {
 		try {
+			let makeVariables = null;
+
+			if(build.variables) {
+				makeVariables = new MakeVariables();
+				makeVariables.append(build.variables);
+				delete build.variables;
+			}
+
 			reduce(build);
 			combine(build);
 
@@ -672,6 +704,9 @@ export class Makefile {
 			clean.append([...rules].filter((rule) => (rule instanceof LinkRule && rule.depends.size && rule.commands.size)).map((rule) => 'clean-' + rule.name));
 
 			rules.add(clean);
+
+			if(makeVariables)
+				rules = new Set([makeVariables, ...rules]);
 
 			return [[
 				'comma := ,',
