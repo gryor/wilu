@@ -736,6 +736,9 @@ var Target = exports.Target = function () {
 									this.library = true;
 									this.shared = !!target.shared;
 
+									this.options.compiler.set('all', new Options({ prefix: '-' }));
+									this.options.compiler.get('all').append(['fPIC']);
+
 									if (this.shared) {
 										this.libname = 'lib' + this.name + '.so.' + this.version;
 										this.options.linker.raw.add('-shared');
@@ -757,7 +760,7 @@ var Target = exports.Target = function () {
 								}
 
 								for (type in target.options.compiler) {
-									options = new Options({ prefix: '-' });
+									options = this.options.compiler.get(type) || new Options({ prefix: '-' });
 
 									options.append(target.options.compiler[type]);
 									this.options.compiler.set(type, options);

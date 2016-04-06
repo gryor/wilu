@@ -443,6 +443,9 @@ export class Target {
 				this.library = true;
 				this.shared = !!target.shared;
 
+				this.options.compiler.set('all', new Options({prefix: '-'}));
+				this.options.compiler.get('all').append(['fPIC']);
+
 				if(this.shared) {
 					this.libname = `lib${this.name}.so.${this.version}`;
 					this.options.linker.raw.add('-shared');
@@ -460,7 +463,7 @@ export class Target {
 
 			if(target.options) {
 				for(let type in target.options.compiler) {
-					let options = new Options({prefix: '-'});
+					let options = this.options.compiler.get(type) || new Options({prefix: '-'});
 					options.append(target.options.compiler[type]);
 					this.options.compiler.set(type, options);
 				}
