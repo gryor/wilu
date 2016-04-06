@@ -412,8 +412,8 @@ export class Target {
 		machine: new Options({prefix: '-m'}),
 		definitions: new Options({prefix: '-D'}),
 		libraries: {
-			static: new Options({suffix: '.a'}),
-			shared: new Options({prefix: '-l'})
+			static: new Options({prefix: '-l:lib', suffix: '.a'}),
+			shared: new Options({prefix: '-l:lib', suffix: '.so'})
 		},
 		search: {
 			includes: new Options({prefix: '-I'}),
@@ -452,7 +452,7 @@ export class Target {
 					this.options.linker.raw.add('-fPIC');
 					this.options.linker.list.add(`soname,lib${this.name}.so.${this.version.major}`);
 				} else {
-					this.name += '.a';
+					this.libname = `lib${this.name}.a`;
 					this.options.linker = new Options();
 					this.options.linker.raw.add('rcs');
 					this.linker = new Tool({name: 'ar', toolset: target.toolset});
@@ -564,11 +564,11 @@ export class Target {
 			this.linker.options.add(this.options.linker);
 			this.linker.options.add(this.options.machine);
 			this.linker.options.add(this.options.definitions);
+			this.linker.options.add(this.options.search.libraries);
+			this.linker.options.add(this.options.search.scripts);
 			this.linker.options.add(this.options.scripts);
 			this.linker.options.add(this.options.libraries.shared);
 			this.linker.options.add(this.options.libraries.static);
-			this.linker.options.add(this.options.search.libraries);
-			this.linker.options.add(this.options.search.scripts);
 
 			let link = new LinkRule({name: this.target});
 
@@ -590,7 +590,7 @@ export class Target {
 				this.rules.add(rule);
 			}
 
-			if(this.objects.size) {
+			if(this.objects.size || this.options.libraries.static.list.size) {
 				link.append(this.objects);
 
 				link.commands.add([
@@ -599,7 +599,7 @@ export class Target {
 				].join(' '));
 
 				let output = path.join(this.directories.base, this.directories.output,
-									   ((this.library && this.shared) ? this.libname : this.name));
+									   (this.library ? this.libname : this.name));
 
 				if(this.library && !this.shared)
 					link.commands.add([this.linker, output, ...this.objects].join(' '));
@@ -656,7 +656,7 @@ export class Target {
 
 			this.rules.add(link);
 
-			if(files.size) {
+			if(files.size || this.options.libraries.static.list.size) {
 				let clean = new LinkRule({name: 'clean-' + this.target});
 				clean.commands.add('rm -rf ' + this.directories.base);
 				this.rules.add(clean);

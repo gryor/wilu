@@ -693,8 +693,8 @@ var Target = exports.Target = function () {
 			machine: new Options({ prefix: '-m' }),
 			definitions: new Options({ prefix: '-D' }),
 			libraries: {
-				static: new Options({ suffix: '.a' }),
-				shared: new Options({ prefix: '-l' })
+				static: new Options({ prefix: '-l:lib', suffix: '.a' }),
+				shared: new Options({ prefix: '-l:lib', suffix: '.so' })
 			},
 			search: {
 				includes: new Options({ prefix: '-I' }),
@@ -745,7 +745,7 @@ var Target = exports.Target = function () {
 										this.options.linker.raw.add('-fPIC');
 										this.options.linker.list.add('soname,lib' + this.name + '.so.' + this.version.major);
 									} else {
-										this.name += '.a';
+										this.libname = 'lib' + this.name + '.a';
 										this.options.linker = new Options();
 										this.options.linker.raw.add('rcs');
 										this.linker = new Tool({ name: 'ar', toolset: target.toolset });
@@ -903,11 +903,11 @@ var Target = exports.Target = function () {
 								this.linker.options.add(this.options.linker);
 								this.linker.options.add(this.options.machine);
 								this.linker.options.add(this.options.definitions);
+								this.linker.options.add(this.options.search.libraries);
+								this.linker.options.add(this.options.search.scripts);
 								this.linker.options.add(this.options.scripts);
 								this.linker.options.add(this.options.libraries.shared);
 								this.linker.options.add(this.options.libraries.static);
-								this.linker.options.add(this.options.search.libraries);
-								this.linker.options.add(this.options.search.scripts);
 
 								link = new LinkRule({ name: this.target });
 
@@ -998,12 +998,12 @@ var Target = exports.Target = function () {
 
 							case 96:
 
-								if (this.objects.size) {
+								if (this.objects.size || this.options.libraries.static.list.size) {
 									link.append(this.objects);
 
 									link.commands.add(['mkdir -p', _path2.default.join(this.directories.base, this.directories.output)].join(' '));
 
-									output = _path2.default.join(this.directories.base, this.directories.output, this.library && this.shared ? this.libname : this.name);
+									output = _path2.default.join(this.directories.base, this.directories.output, this.library ? this.libname : this.name);
 
 
 									if (this.library && !this.shared) link.commands.add([this.linker, output].concat(_toConsumableArray(this.objects)).join(' '));else link.commands.add([this.linker].concat(_toConsumableArray(this.objects), ['-o', output]).join(' '));
@@ -1084,7 +1084,7 @@ var Target = exports.Target = function () {
 
 								this.rules.add(link);
 
-								if (files.size) {
+								if (files.size || this.options.libraries.static.list.size) {
 									clean = new LinkRule({ name: 'clean-' + this.target });
 
 									clean.commands.add('rm -rf ' + this.directories.base);
