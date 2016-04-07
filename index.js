@@ -484,9 +484,18 @@ export class Target {
 				}
 
 				if(target.search) {
-					this.options.search.includes.append(target.search.includes);
-					this.options.search.libraries.append(target.search.libraries);
-					this.options.search.scripts.append(target.search.scripts);
+					if(target.home) {
+						for(let search in target.search) {
+							this.options.search[search].append(target.search[search]
+							.map((p) => (path.isAbsolute(p) ? p : path.join(target.home, p))));
+						}
+
+						this.options.search.libraries.append(target.search.libraries);
+					} else {
+						this.options.search.includes.append(target.search.includes);
+						this.options.search.libraries.append(target.search.libraries);
+						this.options.search.scripts.append(target.search.scripts);
+					}
 				}
 
 				if(target.options.raw) {
@@ -507,18 +516,35 @@ export class Target {
 				this.extensions.set(type, new Set(target.extensions[type]));
 			}
 
-			if(target.depends)
+			if(target.depends) {
 				this.depends = new Set(target.depends);
 
-			target.sources = target.sources || {};
-			target.sources.path = target.sources.path || 'src';
+				if(target.home) {
+					let imports = new Set(target.import || []);
 
-			if(target.sources.subpath)
-				target.sources.path = path.join(target.sources.path, target.sources.subpath);
+					this.depends = new Set([...this.depends].map(function (d) {
+						let modname = d.split('_')[0];
 
-			this.sources.path = target.sources.path;
-			this.sources.include(target.sources.include);
-			this.sources.exclude(target.sources.exclude);
+						if(modname.length && imports.has(modname))
+							return d;
+
+						return `${target.modname}_${d}`;
+					}));
+				}
+			}
+
+			if(target.sources) {
+				this.sources.path = target.sources.path || 'src';
+
+				if(target.home)
+					this.sources.path = path.join(target.home, this.sources.path);
+
+				if(target.sources.subpath)
+					this.sources.path = path.join(this.sources.path, target.sources.subpath);
+
+				this.sources.include(target.sources.include);
+				this.sources.exclude(target.sources.exclude);
+			}
 
 			await this.sources.files();
 
@@ -582,7 +608,7 @@ export class Target {
 				if(!files.has(type))
 					continue;
 
-				let directory = path.join(this.directories.base, this.directories.objects, this.target);
+				let directory = path.join(this.directories.base, this.directories.objects, this.name, this.target);
 				let objects = [...files.get(type)].map((file) => path.join(directory, this.sources.path, file + '.o'));
 				this.objects = new Set([...this.objects, ...objects]);
 
@@ -680,17 +706,10 @@ export class Target {
 
 export class Makefile {
 	targets = new Set();
+	imported = new Set();
 
-	async parse(build) {
+	async load(build) {
 		try {
-			let makeVariables = null;
-
-			if(build.variables) {
-				makeVariables = new MakeVariables();
-				makeVariables.append(build.variables);
-				delete build.variables;
-			}
-
 			reduce(build);
 			combine(build);
 
@@ -700,25 +719,66 @@ export class Makefile {
 				throw new Error('No targets');
 
 			for(let name in build) {
+				if(!build[name].import)
+					continue;
+
+				let target = build[name];
+				let imports = new Set(target.import);
+
+				for(let modname of imports) {
+					if(this.imported.has(modname))
+						continue;
+
+					this.imported.add(modname);
+
+					let modpkg = require(path.join(modname, 'package.json'));
+
+					if(!modpkg.build.name)
+						modpkg.build.name = modpkg.name;
+
+					if(!modpkg.build.version)
+						modpkg.build.version = modpkg.version;
+
+					modpkg.build.modname = modname;
+					modpkg.build.home = path.relative(path.dirname(module.filename), path.dirname(require.resolve(modname)));
+
+					let mod = await this.load(modpkg.build);
+
+					for(let t in mod) {
+						build[modname + '_' + t] = mod[t];
+					}
+				}
+			}
+
+			for(let name in build) {
 				if(!build[name].merge)
 					continue;
 
 				let target = build[name];
-				target.merge = new Set(target.merge);
+				let merges = new Set(target.merge);
 
-				for(let merge of target.merge) {
-					if(isString(merge)) {
-						reduceObjects(build[merge], target);
-					}
-
-					target.merge.delete(merge);
+				for(let merge of merges) {
+					reduceObjects(build[merge], target);
 				}
-
-				delete target.merge;
 			}
 
+			return build;
+		} catch(e) {
+			throw e;
+		}
+	}
+
+	async parse(build) {
+		try {
+			let makeVariables = new MakeVariables();
 			let calls = [];
+
+			build = await this.load(build);
+
 			for(let name in build) {
+				if(build[name].variables)
+					makeVariables.append(build[name].variables);
+
 				let target = new Target;
 				this.targets.add(target);
 				calls.push(target.parse(name, build[name]));
@@ -733,7 +793,7 @@ export class Makefile {
 
 			rules.add(clean);
 
-			if(makeVariables)
+			if(makeVariables.list.size)
 				rules = new Set([makeVariables, ...rules]);
 
 			return [[
