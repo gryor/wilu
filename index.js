@@ -568,7 +568,6 @@ export class Target {
 			this.linker.options.add(this.options.search.scripts);
 			this.linker.options.add(this.options.scripts);
 			this.linker.options.add(this.options.libraries.shared);
-			this.linker.options.add(this.options.libraries.static);
 
 			let link = new LinkRule({name: this.target});
 
@@ -603,8 +602,12 @@ export class Target {
 
 				if(this.library && !this.shared)
 					link.commands.add([this.linker, output, ...this.objects].join(' '));
-				else
-					link.commands.add([this.linker, ...this.objects, '-o', output].join(' '));
+				else {
+					link.commands.add([this.linker, ...this.objects, this.options.libraries.static, '-o', output]
+					.map((e) => e.toString())
+					.filter((e) => (e && e.length > 0))
+					.join(' '));
+				}
 
 				if(this.library && this.shared) {
 					link.commands.add([

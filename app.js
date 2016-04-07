@@ -907,7 +907,6 @@ var Target = exports.Target = function () {
 								this.linker.options.add(this.options.search.scripts);
 								this.linker.options.add(this.options.scripts);
 								this.linker.options.add(this.options.libraries.shared);
-								this.linker.options.add(this.options.libraries.static);
 
 								link = new LinkRule({ name: this.target });
 
@@ -917,7 +916,7 @@ var Target = exports.Target = function () {
 								_iteratorNormalCompletion5 = true;
 								_didIteratorError5 = false;
 								_iteratorError5 = undefined;
-								_context2.prev = 72;
+								_context2.prev = 71;
 
 								_loop2 = function _loop2() {
 									var _step5$value = _slicedToArray(_step5.value, 2);
@@ -942,61 +941,61 @@ var Target = exports.Target = function () {
 
 								_iterator5 = this.tools[Symbol.iterator]();
 
-							case 75:
+							case 74:
 								if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
-									_context2.next = 82;
+									_context2.next = 81;
 									break;
 								}
 
 								_ret4 = _loop2();
 
 								if (!(_ret4 === 'continue')) {
-									_context2.next = 79;
+									_context2.next = 78;
 									break;
 								}
 
-								return _context2.abrupt('continue', 79);
+								return _context2.abrupt('continue', 78);
 
-							case 79:
+							case 78:
 								_iteratorNormalCompletion5 = true;
-								_context2.next = 75;
+								_context2.next = 74;
 								break;
 
-							case 82:
-								_context2.next = 88;
+							case 81:
+								_context2.next = 87;
 								break;
 
-							case 84:
-								_context2.prev = 84;
-								_context2.t1 = _context2['catch'](72);
+							case 83:
+								_context2.prev = 83;
+								_context2.t1 = _context2['catch'](71);
 								_didIteratorError5 = true;
 								_iteratorError5 = _context2.t1;
 
-							case 88:
+							case 87:
+								_context2.prev = 87;
 								_context2.prev = 88;
-								_context2.prev = 89;
 
 								if (!_iteratorNormalCompletion5 && _iterator5.return) {
 									_iterator5.return();
 								}
 
-							case 91:
-								_context2.prev = 91;
+							case 90:
+								_context2.prev = 90;
 
 								if (!_didIteratorError5) {
-									_context2.next = 94;
+									_context2.next = 93;
 									break;
 								}
 
 								throw _iteratorError5;
 
+							case 93:
+								return _context2.finish(90);
+
 							case 94:
-								return _context2.finish(91);
+								return _context2.finish(87);
 
 							case 95:
-								return _context2.finish(88);
-
-							case 96:
 
 								if (this.objects.size || this.options.libraries.static.list.size) {
 									link.append(this.objects);
@@ -1006,7 +1005,13 @@ var Target = exports.Target = function () {
 									output = _path2.default.join(this.directories.base, this.directories.output, this.library ? this.libname : this.name);
 
 
-									if (this.library && !this.shared) link.commands.add([this.linker, output].concat(_toConsumableArray(this.objects)).join(' '));else link.commands.add([this.linker].concat(_toConsumableArray(this.objects), ['-o', output]).join(' '));
+									if (this.library && !this.shared) link.commands.add([this.linker, output].concat(_toConsumableArray(this.objects)).join(' '));else {
+										link.commands.add([this.linker].concat(_toConsumableArray(this.objects), [this.options.libraries.static, '-o', output]).map(function (e) {
+											return e.toString();
+										}).filter(function (e) {
+											return e && e.length > 0;
+										}).join(' '));
+									}
 
 									if (this.library && this.shared) {
 										link.commands.add(['ln -sf', this.libname, _path2.default.join(this.directories.base, this.directories.output, 'lib' + this.name + '.so')].join(' '));
@@ -1034,53 +1039,53 @@ var Target = exports.Target = function () {
 								}
 
 								if (!target.commands) {
-									_context2.next = 118;
+									_context2.next = 117;
 									break;
 								}
 
 								_iteratorNormalCompletion6 = true;
 								_didIteratorError6 = false;
 								_iteratorError6 = undefined;
-								_context2.prev = 102;
+								_context2.prev = 101;
 
 								for (_iterator6 = target.commands[Symbol.iterator](); !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
 									cmd = _step6.value;
 
 									link.commands.add(cmd);
-								}_context2.next = 110;
+								}_context2.next = 109;
 								break;
 
-							case 106:
-								_context2.prev = 106;
-								_context2.t2 = _context2['catch'](102);
+							case 105:
+								_context2.prev = 105;
+								_context2.t2 = _context2['catch'](101);
 								_didIteratorError6 = true;
 								_iteratorError6 = _context2.t2;
 
-							case 110:
+							case 109:
+								_context2.prev = 109;
 								_context2.prev = 110;
-								_context2.prev = 111;
 
 								if (!_iteratorNormalCompletion6 && _iterator6.return) {
 									_iterator6.return();
 								}
 
-							case 113:
-								_context2.prev = 113;
+							case 112:
+								_context2.prev = 112;
 
 								if (!_didIteratorError6) {
-									_context2.next = 116;
+									_context2.next = 115;
 									break;
 								}
 
 								throw _iteratorError6;
 
+							case 115:
+								return _context2.finish(112);
+
 							case 116:
-								return _context2.finish(113);
+								return _context2.finish(109);
 
 							case 117:
-								return _context2.finish(110);
-
-							case 118:
 
 								this.rules.add(link);
 
@@ -1092,22 +1097,22 @@ var Target = exports.Target = function () {
 								}
 
 								log(this);
-								_context2.next = 127;
+								_context2.next = 126;
 								break;
 
-							case 123:
-								_context2.prev = 123;
+							case 122:
+								_context2.prev = 122;
 								_context2.t3 = _context2['catch'](0);
 
 								log(_context2.t3);
 								throw _context2.t3;
 
-							case 127:
+							case 126:
 							case 'end':
 								return _context2.stop();
 						}
 					}
-				}, _callee2, this, [[0, 123], [21, 25, 29, 37], [30,, 32, 36], [72, 84, 88, 96], [89,, 91, 95], [102, 106, 110, 118], [111,, 113, 117]]);
+				}, _callee2, this, [[0, 122], [21, 25, 29, 37], [30,, 32, 36], [71, 83, 87, 95], [88,, 90, 94], [101, 105, 109, 117], [110,, 112, 116]]);
 			}));
 
 			function parse(_x7, _x8) {
