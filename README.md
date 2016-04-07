@@ -156,3 +156,6 @@ Properties
 * variables: object of variables where the keys are the variable names. Each property is turned into 'key= value'. This allows to
   specify a modifier to the equal sign, e.g. ':' or '?'.
 * commands: array of commands to be executed after linking
+* toolset: prefix the tools. For example 'arm-none-eabi' will produce `arm-none-eabi-gcc` with the default tools.
+* tools: object of tools where the key is the purpose and the value is the actual tool without prefix. Defaults are: c: `gcc`,
+  c++: `g++` and asm: `gcc -x assembler-with-cpp`.
