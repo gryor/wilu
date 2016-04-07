@@ -140,16 +140,16 @@ Properties
   - libraries: array of paths for libraries
   - scripts: array of paths for linker scritps
 * libraries
-	static: array of static link libraries
-	shared: array of shared link libraries
+  - static: array of static link libraries
+  - shared: array of shared link libraries
 * directories
-	base: output directory. Defaults to 'build'.
-	output: subdirectory in base. Defaults to 'bin'.
-	objects: subdirectory for the objects. Defaults to 'obj'.
+  - base: output directory. Defaults to 'build'.
+  - output: subdirectory in base. Defaults to 'bin'.
+  - objects: subdirectory for the objects. Defaults to 'obj'.
 * import: array of modules to be imported with targets prefixed with the module name and an underscore
 * depends: array of targets to build before linking
 * merge: array of targets to inherit properties from. Same as adding under `+` property, but can be used to interlink targets or
   continue an imported target.
-* library: a boolean, which turns the target into a static library. The output name is changed into 'lib<name>.a'
-* shared: a boolean, which turns a library target into a shared library. The output name is changed into 'lib<name>.so.<version>'
+* library: a boolean, which turns the target into a static library. The output name is changed into 'libname.a'
+* shared: a boolean, which turns a library target into a shared library. The output name is changed into 'libname.so.version'
   and symbolic links will be generated.
