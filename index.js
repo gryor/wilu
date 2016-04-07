@@ -15,6 +15,10 @@ function isSet(value) {
 	return Object.prototype.toString.call(value) === Object.prototype.toString.call(Set.prototype);
 }
 
+function isString(value) {
+	return Object.prototype.toString.call(value) === Object.prototype.toString.call(String.prototype);
+}
+
 function writeFile(path, content) {
 	try {
 		return new Promise(function(success, fail) {
@@ -695,6 +699,24 @@ export class Makefile {
 			else
 				throw new Error('No targets');
 
+			for(let name in build) {
+				if(!build[name].merge)
+					continue;
+
+				let target = build[name];
+				target.merge = new Set(target.merge);
+
+				for(let merge of target.merge) {
+					if(isString(merge)) {
+						reduceObjects(build[merge], target);
+					}
+
+					target.merge.delete(merge);
+				}
+
+				delete target.merge;
+			}
+
 			let calls = [];
 			for(let name in build) {
 				let target = new Target;
@@ -741,8 +763,8 @@ export default async function makefile(build) {
 if(require.main === module)
 	(async function () {
 		try {
-			let makefile = new Makefile();
-			let out = await makefile.parse(require('./package.json').build);
+			let make = new Makefile();
+			let out = await make.parse(require('./package.json').build);
 			log(out);
 			require('fs').writeFile('makefile', out);
 		} catch(e) {
