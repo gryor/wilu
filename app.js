@@ -49,6 +49,10 @@ function isSet(value) {
 	return Object.prototype.toString.call(value) === Object.prototype.toString.call(Set.prototype);
 }
 
+function isString(value) {
+	return Object.prototype.toString.call(value) === Object.prototype.toString.call(String.prototype);
+}
+
 function writeFile(path, content) {
 	try {
 		return new Promise(function (success, fail) {
@@ -717,7 +721,7 @@ var Target = exports.Target = function () {
 			var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(name, target) {
 				var _this4 = this;
 
-				var type, options, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, opt, _type, files, _type2, tool, linker, link, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _loop2, _iterator5, _step5, _ret4, output, _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, cmd, clean;
+				var type, options, search, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, opt, _type, files, _type2, tool, linker, link, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _loop2, _iterator5, _step5, _ret5, output, _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, cmd, clean;
 
 				return regeneratorRuntime.wrap(function _callee2$(_context2) {
 					while (1) {
@@ -778,9 +782,19 @@ var Target = exports.Target = function () {
 								}
 
 								if (target.search) {
-									this.options.search.includes.append(target.search.includes);
-									this.options.search.libraries.append(target.search.libraries);
-									this.options.search.scripts.append(target.search.scripts);
+									if (target.home) {
+										for (search in target.search) {
+											this.options.search[search].append(target.search[search].map(function (p) {
+												return _path2.default.isAbsolute(p) ? p : _path2.default.join(target.home, p);
+											}));
+										}
+
+										this.options.search.libraries.append(target.search.libraries);
+									} else {
+										this.options.search.includes.append(target.search.includes);
+										this.options.search.libraries.append(target.search.libraries);
+										this.options.search.scripts.append(target.search.scripts);
+									}
 								}
 
 								if (!target.options.raw) {
@@ -847,21 +861,39 @@ var Target = exports.Target = function () {
 									this.extensions.set(_type, new Set(target.extensions[_type]));
 								}
 
-								if (target.depends) this.depends = new Set(target.depends);
+								if (target.depends) {
+									this.depends = new Set(target.depends);
 
-								target.sources = target.sources || {};
-								target.sources.path = target.sources.path || 'src';
+									if (target.home) {
+										(function () {
+											var imports = new Set(target.import || []);
 
-								if (target.sources.subpath) target.sources.path = _path2.default.join(target.sources.path, target.sources.subpath);
+											_this4.depends = new Set([].concat(_toConsumableArray(_this4.depends)).map(function (d) {
+												var modname = d.split('_')[0];
 
-								this.sources.path = target.sources.path;
-								this.sources.include(target.sources.include);
-								this.sources.exclude(target.sources.exclude);
+												if (modname.length && imports.has(modname)) return d;
 
-								_context2.next = 52;
+												return target.modname + '_' + d;
+											}));
+										})();
+									}
+								}
+
+								if (target.sources) {
+									this.sources.path = target.sources.path || 'src';
+
+									if (target.home) this.sources.path = _path2.default.join(target.home, this.sources.path);
+
+									if (target.sources.subpath) this.sources.path = _path2.default.join(this.sources.path, target.sources.subpath);
+
+									this.sources.include(target.sources.include);
+									this.sources.exclude(target.sources.exclude);
+								}
+
+								_context2.next = 47;
 								return this.sources.files();
 
-							case 52:
+							case 47:
 								files = this.sources.organize(this.extensions);
 
 
@@ -916,7 +948,7 @@ var Target = exports.Target = function () {
 								_iteratorNormalCompletion5 = true;
 								_didIteratorError5 = false;
 								_iteratorError5 = undefined;
-								_context2.prev = 71;
+								_context2.prev = 66;
 
 								_loop2 = function _loop2() {
 									var _step5$value = _slicedToArray(_step5.value, 2);
@@ -926,7 +958,7 @@ var Target = exports.Target = function () {
 
 									if (!files.has(type)) return 'continue';
 
-									var directory = _path2.default.join(_this4.directories.base, _this4.directories.objects, _this4.target);
+									var directory = _path2.default.join(_this4.directories.base, _this4.directories.objects, _this4.name, _this4.target);
 									var objects = [].concat(_toConsumableArray(files.get(type))).map(function (file) {
 										return _path2.default.join(directory, _this4.sources.path, file + '.o');
 									});
@@ -941,61 +973,61 @@ var Target = exports.Target = function () {
 
 								_iterator5 = this.tools[Symbol.iterator]();
 
-							case 74:
+							case 69:
 								if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
-									_context2.next = 81;
+									_context2.next = 76;
 									break;
 								}
 
-								_ret4 = _loop2();
+								_ret5 = _loop2();
 
-								if (!(_ret4 === 'continue')) {
-									_context2.next = 78;
+								if (!(_ret5 === 'continue')) {
+									_context2.next = 73;
 									break;
 								}
 
-								return _context2.abrupt('continue', 78);
+								return _context2.abrupt('continue', 73);
+
+							case 73:
+								_iteratorNormalCompletion5 = true;
+								_context2.next = 69;
+								break;
+
+							case 76:
+								_context2.next = 82;
+								break;
 
 							case 78:
-								_iteratorNormalCompletion5 = true;
-								_context2.next = 74;
-								break;
-
-							case 81:
-								_context2.next = 87;
-								break;
-
-							case 83:
-								_context2.prev = 83;
-								_context2.t1 = _context2['catch'](71);
+								_context2.prev = 78;
+								_context2.t1 = _context2['catch'](66);
 								_didIteratorError5 = true;
 								_iteratorError5 = _context2.t1;
 
-							case 87:
-								_context2.prev = 87;
-								_context2.prev = 88;
+							case 82:
+								_context2.prev = 82;
+								_context2.prev = 83;
 
 								if (!_iteratorNormalCompletion5 && _iterator5.return) {
 									_iterator5.return();
 								}
 
-							case 90:
-								_context2.prev = 90;
+							case 85:
+								_context2.prev = 85;
 
 								if (!_didIteratorError5) {
-									_context2.next = 93;
+									_context2.next = 88;
 									break;
 								}
 
 								throw _iteratorError5;
 
-							case 93:
-								return _context2.finish(90);
+							case 88:
+								return _context2.finish(85);
 
-							case 94:
-								return _context2.finish(87);
+							case 89:
+								return _context2.finish(82);
 
-							case 95:
+							case 90:
 
 								if (this.objects.size || this.options.libraries.static.list.size) {
 									link.append(this.objects);
@@ -1039,53 +1071,53 @@ var Target = exports.Target = function () {
 								}
 
 								if (!target.commands) {
-									_context2.next = 117;
+									_context2.next = 112;
 									break;
 								}
 
 								_iteratorNormalCompletion6 = true;
 								_didIteratorError6 = false;
 								_iteratorError6 = undefined;
-								_context2.prev = 101;
+								_context2.prev = 96;
 
 								for (_iterator6 = target.commands[Symbol.iterator](); !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
 									cmd = _step6.value;
 
 									link.commands.add(cmd);
-								}_context2.next = 109;
+								}_context2.next = 104;
 								break;
 
-							case 105:
-								_context2.prev = 105;
-								_context2.t2 = _context2['catch'](101);
+							case 100:
+								_context2.prev = 100;
+								_context2.t2 = _context2['catch'](96);
 								_didIteratorError6 = true;
 								_iteratorError6 = _context2.t2;
 
-							case 109:
-								_context2.prev = 109;
-								_context2.prev = 110;
+							case 104:
+								_context2.prev = 104;
+								_context2.prev = 105;
 
 								if (!_iteratorNormalCompletion6 && _iterator6.return) {
 									_iterator6.return();
 								}
 
-							case 112:
-								_context2.prev = 112;
+							case 107:
+								_context2.prev = 107;
 
 								if (!_didIteratorError6) {
-									_context2.next = 115;
+									_context2.next = 110;
 									break;
 								}
 
 								throw _iteratorError6;
 
-							case 115:
-								return _context2.finish(112);
+							case 110:
+								return _context2.finish(107);
 
-							case 116:
-								return _context2.finish(109);
+							case 111:
+								return _context2.finish(104);
 
-							case 117:
+							case 112:
 
 								this.rules.add(link);
 
@@ -1097,22 +1129,22 @@ var Target = exports.Target = function () {
 								}
 
 								log(this);
-								_context2.next = 126;
+								_context2.next = 121;
 								break;
 
-							case 122:
-								_context2.prev = 122;
+							case 117:
+								_context2.prev = 117;
 								_context2.t3 = _context2['catch'](0);
 
 								log(_context2.t3);
 								throw _context2.t3;
 
-							case 126:
+							case 121:
 							case 'end':
 								return _context2.stop();
 						}
 					}
-				}, _callee2, this, [[0, 122], [21, 25, 29, 37], [30,, 32, 36], [71, 83, 87, 95], [88,, 90, 94], [101, 105, 109, 117], [110,, 112, 116]]);
+				}, _callee2, this, [[0, 117], [21, 25, 29, 37], [30,, 32, 36], [66, 78, 82, 90], [83,, 85, 89], [96, 100, 104, 112], [105,, 107, 111]]);
 			}));
 
 			function parse(_x7, _x8) {
@@ -1131,56 +1163,269 @@ var Makefile = exports.Makefile = function () {
 		_classCallCheck(this, Makefile);
 
 		this.targets = new Set();
+		this.imported = new Set();
 	}
 
 	_createClass(Makefile, [{
-		key: 'parse',
+		key: 'load',
 		value: function () {
 			var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee3(build) {
-				var makeVariables, calls, name, target, rules, clean;
+				var name, target, imports, _iteratorNormalCompletion7, _didIteratorError7, _iteratorError7, _iterator7, _step7, modname, modpkg, mod, t, _name, _target, merges, _iteratorNormalCompletion8, _didIteratorError8, _iteratorError8, _iterator8, _step8, merge;
+
 				return regeneratorRuntime.wrap(function _callee3$(_context3) {
 					while (1) {
 						switch (_context3.prev = _context3.next) {
 							case 0:
 								_context3.prev = 0;
-								makeVariables = null;
-
-
-								if (build.variables) {
-									makeVariables = new MakeVariables();
-									makeVariables.append(build.variables);
-									delete build.variables;
-								}
 
 								reduce(build);
 								combine(build);
 
 								if (!build['+']) {
-									_context3.next = 9;
+									_context3.next = 7;
 									break;
 								}
 
 								build = build['+'];
-								_context3.next = 10;
+								_context3.next = 8;
 								break;
 
-							case 9:
+							case 7:
 								throw new Error('No targets');
 
-							case 10:
+							case 8:
+								_context3.t0 = regeneratorRuntime.keys(build);
+
+							case 9:
+								if ((_context3.t1 = _context3.t0()).done) {
+									_context3.next = 53;
+									break;
+								}
+
+								name = _context3.t1.value;
+
+								if (build[name].import) {
+									_context3.next = 13;
+									break;
+								}
+
+								return _context3.abrupt('continue', 9);
+
+							case 13:
+								target = build[name];
+								imports = new Set(target.import);
+								_iteratorNormalCompletion7 = true;
+								_didIteratorError7 = false;
+								_iteratorError7 = undefined;
+								_context3.prev = 18;
+								_iterator7 = imports[Symbol.iterator]();
+
+							case 20:
+								if (_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done) {
+									_context3.next = 37;
+									break;
+								}
+
+								modname = _step7.value;
+
+								if (!this.imported.has(modname)) {
+									_context3.next = 24;
+									break;
+								}
+
+								return _context3.abrupt('continue', 34);
+
+							case 24:
+
+								this.imported.add(modname);
+
+								modpkg = require(_path2.default.join(modname, 'package.json'));
+
+
+								if (!modpkg.build.name) modpkg.build.name = modpkg.name;
+
+								if (!modpkg.build.version) modpkg.build.version = modpkg.version;
+
+								modpkg.build.modname = modname;
+								modpkg.build.home = _path2.default.relative(_path2.default.dirname(module.filename), _path2.default.dirname(require.resolve(modname)));
+
+								_context3.next = 32;
+								return this.load(modpkg.build);
+
+							case 32:
+								mod = _context3.sent;
+
+
+								for (t in mod) {
+									build[modname + '_' + t] = mod[t];
+								}
+
+							case 34:
+								_iteratorNormalCompletion7 = true;
+								_context3.next = 20;
+								break;
+
+							case 37:
+								_context3.next = 43;
+								break;
+
+							case 39:
+								_context3.prev = 39;
+								_context3.t2 = _context3['catch'](18);
+								_didIteratorError7 = true;
+								_iteratorError7 = _context3.t2;
+
+							case 43:
+								_context3.prev = 43;
+								_context3.prev = 44;
+
+								if (!_iteratorNormalCompletion7 && _iterator7.return) {
+									_iterator7.return();
+								}
+
+							case 46:
+								_context3.prev = 46;
+
+								if (!_didIteratorError7) {
+									_context3.next = 49;
+									break;
+								}
+
+								throw _iteratorError7;
+
+							case 49:
+								return _context3.finish(46);
+
+							case 50:
+								return _context3.finish(43);
+
+							case 51:
+								_context3.next = 9;
+								break;
+
+							case 53:
+								_context3.t3 = regeneratorRuntime.keys(build);
+
+							case 54:
+								if ((_context3.t4 = _context3.t3()).done) {
+									_context3.next = 81;
+									break;
+								}
+
+								_name = _context3.t4.value;
+
+								if (build[_name].merge) {
+									_context3.next = 58;
+									break;
+								}
+
+								return _context3.abrupt('continue', 54);
+
+							case 58:
+								_target = build[_name];
+								merges = new Set(_target.merge);
+								_iteratorNormalCompletion8 = true;
+								_didIteratorError8 = false;
+								_iteratorError8 = undefined;
+								_context3.prev = 63;
+
+
+								for (_iterator8 = merges[Symbol.iterator](); !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+									merge = _step8.value;
+
+									reduceObjects(build[merge], _target);
+								}
+								_context3.next = 71;
+								break;
+
+							case 67:
+								_context3.prev = 67;
+								_context3.t5 = _context3['catch'](63);
+								_didIteratorError8 = true;
+								_iteratorError8 = _context3.t5;
+
+							case 71:
+								_context3.prev = 71;
+								_context3.prev = 72;
+
+								if (!_iteratorNormalCompletion8 && _iterator8.return) {
+									_iterator8.return();
+								}
+
+							case 74:
+								_context3.prev = 74;
+
+								if (!_didIteratorError8) {
+									_context3.next = 77;
+									break;
+								}
+
+								throw _iteratorError8;
+
+							case 77:
+								return _context3.finish(74);
+
+							case 78:
+								return _context3.finish(71);
+
+							case 79:
+								_context3.next = 54;
+								break;
+
+							case 81:
+								return _context3.abrupt('return', build);
+
+							case 84:
+								_context3.prev = 84;
+								_context3.t6 = _context3['catch'](0);
+								throw _context3.t6;
+
+							case 87:
+							case 'end':
+								return _context3.stop();
+						}
+					}
+				}, _callee3, this, [[0, 84], [18, 39, 43, 51], [44,, 46, 50], [63, 67, 71, 79], [72,, 74, 78]]);
+			}));
+
+			function load(_x9) {
+				return ref.apply(this, arguments);
+			}
+
+			return load;
+		}()
+	}, {
+		key: 'parse',
+		value: function () {
+			var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee4(build) {
+				var makeVariables, calls, name, target, rules, clean;
+				return regeneratorRuntime.wrap(function _callee4$(_context4) {
+					while (1) {
+						switch (_context4.prev = _context4.next) {
+							case 0:
+								_context4.prev = 0;
+								makeVariables = new MakeVariables();
 								calls = [];
+								_context4.next = 5;
+								return this.load(build);
+
+							case 5:
+								build = _context4.sent;
+
 
 								for (name in build) {
+									if (build[name].variables) makeVariables.append(build[name].variables);
+
 									target = new Target();
 
 									this.targets.add(target);
 									calls.push(target.parse(name, build[name]));
 								}
 
-								_context3.next = 14;
+								_context4.next = 9;
 								return Promise.all(calls);
 
-							case 14:
+							case 9:
 								rules = new Set([].concat(_toConsumableArray(this.targets)).map(function (_ref6) {
 									var rules = _ref6.rules;
 									return rules;
@@ -1198,24 +1443,24 @@ var Makefile = exports.Makefile = function () {
 
 								rules.add(clean);
 
-								if (makeVariables) rules = new Set([makeVariables].concat(_toConsumableArray(rules)));
+								if (makeVariables.list.size) rules = new Set([makeVariables].concat(_toConsumableArray(rules)));
 
-								return _context3.abrupt('return', [['comma := ,', 'empty:=', 'space:= $(empty) $(empty)', 'destdir ?=', 'prefix ?= /usr', 'installdir := ${destdir}${prefix}', '.DEFAULT_GOAL := all'].join('\n')].concat(_toConsumableArray(rules)).join('\n\n'));
+								return _context4.abrupt('return', [['comma := ,', 'empty:=', 'space:= $(empty) $(empty)', 'destdir ?=', 'prefix ?= /usr', 'installdir := ${destdir}${prefix}', '.DEFAULT_GOAL := all'].join('\n')].concat(_toConsumableArray(rules)).join('\n\n'));
 
-							case 22:
-								_context3.prev = 22;
-								_context3.t0 = _context3['catch'](0);
-								throw _context3.t0;
+							case 17:
+								_context4.prev = 17;
+								_context4.t0 = _context4['catch'](0);
+								throw _context4.t0;
 
-							case 25:
+							case 20:
 							case 'end':
-								return _context3.stop();
+								return _context4.stop();
 						}
 					}
-				}, _callee3, this, [[0, 22]]);
+				}, _callee4, this, [[0, 17]]);
 			}));
 
-			function parse(_x9) {
+			function parse(_x10) {
 				return ref.apply(this, arguments);
 			}
 
@@ -1227,77 +1472,77 @@ var Makefile = exports.Makefile = function () {
 }();
 
 exports.default = function () {
-	var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee4(build) {
+	var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee5(build) {
 		var _makefile;
 
-		return regeneratorRuntime.wrap(function _callee4$(_context4) {
+		return regeneratorRuntime.wrap(function _callee5$(_context5) {
 			while (1) {
-				switch (_context4.prev = _context4.next) {
+				switch (_context5.prev = _context5.next) {
 					case 0:
-						_context4.prev = 0;
+						_context5.prev = 0;
 						_makefile = new Makefile();
-						_context4.next = 4;
+						_context5.next = 4;
 						return _makefile.parse(build);
 
 					case 4:
-						_context4.t0 = _context4.sent;
-						_context4.next = 7;
-						return writeFile('makefile', _context4.t0);
+						_context5.t0 = _context5.sent;
+						_context5.next = 7;
+						return writeFile('makefile', _context5.t0);
 
 					case 7:
-						_context4.next = 12;
+						_context5.next = 12;
 						break;
 
 					case 9:
-						_context4.prev = 9;
-						_context4.t1 = _context4['catch'](0);
-						throw _context4.t1;
+						_context5.prev = 9;
+						_context5.t1 = _context5['catch'](0);
+						throw _context5.t1;
 
 					case 12:
 					case 'end':
-						return _context4.stop();
+						return _context5.stop();
 				}
 			}
-		}, _callee4, this, [[0, 9]]);
+		}, _callee5, this, [[0, 9]]);
 	}));
 
-	function makefile(_x10) {
+	function makefile(_x11) {
 		return ref.apply(this, arguments);
 	}
 
 	return makefile;
 }();
 
-if (require.main === module) _asyncToGenerator(regeneratorRuntime.mark(function _callee5() {
-	var makefile, out;
-	return regeneratorRuntime.wrap(function _callee5$(_context5) {
+if (require.main === module) _asyncToGenerator(regeneratorRuntime.mark(function _callee6() {
+	var make, out;
+	return regeneratorRuntime.wrap(function _callee6$(_context6) {
 		while (1) {
-			switch (_context5.prev = _context5.next) {
+			switch (_context6.prev = _context6.next) {
 				case 0:
-					_context5.prev = 0;
-					makefile = new Makefile();
-					_context5.next = 4;
-					return makefile.parse(require('./package.json').build);
+					_context6.prev = 0;
+					make = new Makefile();
+					_context6.next = 4;
+					return make.parse(require('./package.json').build);
 
 				case 4:
-					out = _context5.sent;
+					out = _context6.sent;
 
 					log(out);
 					require('fs').writeFile('makefile', out);
-					_context5.next = 13;
+					_context6.next = 13;
 					break;
 
 				case 9:
-					_context5.prev = 9;
-					_context5.t0 = _context5['catch'](0);
+					_context6.prev = 9;
+					_context6.t0 = _context6['catch'](0);
 
-					log(_context5.t0);
-					throw _context5.t0;
+					log(_context6.t0);
+					throw _context6.t0;
 
 				case 13:
 				case 'end':
-					return _context5.stop();
+					return _context6.stop();
 			}
 		}
-	}, _callee5, this, [[0, 9]]);
+	}, _callee6, this, [[0, 9]]);
 }))();
