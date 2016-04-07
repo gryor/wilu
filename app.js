@@ -788,13 +788,11 @@ var Target = exports.Target = function () {
 												return _path2.default.isAbsolute(p) ? p : _path2.default.join(target.home, p);
 											}));
 										}
-
-										this.options.search.libraries.append(target.search.libraries);
-									} else {
-										this.options.search.includes.append(target.search.includes);
-										this.options.search.libraries.append(target.search.libraries);
-										this.options.search.scripts.append(target.search.scripts);
 									}
+
+									this.options.search.includes.append(target.search.includes);
+									this.options.search.libraries.append(target.search.libraries);
+									this.options.search.scripts.append(target.search.scripts);
 								}
 
 								if (!target.options.raw) {

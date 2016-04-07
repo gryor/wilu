@@ -489,13 +489,11 @@ export class Target {
 							this.options.search[search].append(target.search[search]
 							.map((p) => (path.isAbsolute(p) ? p : path.join(target.home, p))));
 						}
-
-						this.options.search.libraries.append(target.search.libraries);
-					} else {
-						this.options.search.includes.append(target.search.includes);
-						this.options.search.libraries.append(target.search.libraries);
-						this.options.search.scripts.append(target.search.scripts);
 					}
+
+					this.options.search.includes.append(target.search.includes);
+					this.options.search.libraries.append(target.search.libraries);
+					this.options.search.scripts.append(target.search.scripts);
 				}
 
 				if(target.options.raw) {
