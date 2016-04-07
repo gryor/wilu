@@ -1,6 +1,6 @@
 {
   "name": "wilu",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "",
   "main": "app.js",
   "scripts": {
@@ -10,7 +10,15 @@
   },
   "author": "Wilhelm Matilainen",
   "license": "GPLv3",
-  "keywords": ["wilu", "make", "build", "compile", "native", "generator", "makefile"],
+  "keywords": [
+    "wilu",
+    "make",
+    "build",
+    "compile",
+    "native",
+    "generator",
+    "makefile"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wilhelmmatilainen/wilu.git"
