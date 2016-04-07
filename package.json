@@ -1,6 +1,6 @@
 {
   "name": "wilu",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "",
   "main": "app.js",
   "scripts": {
@@ -129,7 +129,7 @@
         }
       },
       "test": {
-		"name": "nao",
+        "name": "nao",
         "import": [
           "native-nao"
         ],
