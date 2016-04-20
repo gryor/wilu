@@ -1,16 +1,15 @@
-Wilu
-===
+# Wilu
 
 Wilu generates makefiles without additional dependencies.
 
-Features
-===
+## Features
+
 * Import native code from npm as if they were node.js modules
 * Build instructions in package.json
 * Incremental build instructions
 
-Generate the makefile
-===
+## Generate the makefile
+
 make.js:
 ```js
 import wilu from 'wilu';
@@ -34,8 +33,8 @@ babel-node make.js
 
 Now you have `makefile` in your current directory.
 
-Build instructions
-===
+## Build instructions
+
 Goes to package.json under `build` as an object. See the package.json of this project.
 
 The build targets are defined in `build` under property `+` as an object where the key is the target name and the value is an object
@@ -115,8 +114,8 @@ The make targets are `release` and `debug`.
 }
 ```
 
-Properties
----
+## Properties
+
 
 * name: defines the output name
 * version: defines the version
