@@ -931,12 +931,15 @@ var Target = exports.Target = function () {
 								}
 
 								this.linker.options.add(this.options.linker);
-								this.linker.options.add(this.options.machine);
-								//this.linker.options.add(this.options.definitions);
-								this.linker.options.add(this.options.search.libraries);
-								this.linker.options.add(this.options.search.scripts);
-								this.linker.options.add(this.options.scripts);
-								this.linker.options.add(this.options.libraries.shared);
+
+								if (!(this.library && !this.shared)) {
+									this.linker.options.add(this.options.machine);
+									this.linker.options.add(this.options.definitions);
+									this.linker.options.add(this.options.search.libraries);
+									this.linker.options.add(this.options.search.scripts);
+									this.linker.options.add(this.options.scripts);
+									this.linker.options.add(this.options.libraries.shared);
+								}
 
 								link = new LinkRule({ name: this.target });
 
@@ -946,7 +949,7 @@ var Target = exports.Target = function () {
 								_iteratorNormalCompletion5 = true;
 								_didIteratorError5 = false;
 								_iteratorError5 = undefined;
-								_context2.prev = 65;
+								_context2.prev = 61;
 
 								_loop2 = function _loop2() {
 									var _step5$value = _slicedToArray(_step5.value, 2);
@@ -971,61 +974,61 @@ var Target = exports.Target = function () {
 
 								_iterator5 = this.tools[Symbol.iterator]();
 
-							case 68:
+							case 64:
 								if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
-									_context2.next = 75;
+									_context2.next = 71;
 									break;
 								}
 
 								_ret5 = _loop2();
 
 								if (!(_ret5 === 'continue')) {
-									_context2.next = 72;
+									_context2.next = 68;
 									break;
 								}
 
-								return _context2.abrupt('continue', 72);
+								return _context2.abrupt('continue', 68);
 
-							case 72:
+							case 68:
 								_iteratorNormalCompletion5 = true;
-								_context2.next = 68;
+								_context2.next = 64;
 								break;
 
-							case 75:
-								_context2.next = 81;
+							case 71:
+								_context2.next = 77;
 								break;
 
-							case 77:
-								_context2.prev = 77;
-								_context2.t1 = _context2['catch'](65);
+							case 73:
+								_context2.prev = 73;
+								_context2.t1 = _context2['catch'](61);
 								_didIteratorError5 = true;
 								_iteratorError5 = _context2.t1;
 
-							case 81:
-								_context2.prev = 81;
-								_context2.prev = 82;
+							case 77:
+								_context2.prev = 77;
+								_context2.prev = 78;
 
 								if (!_iteratorNormalCompletion5 && _iterator5.return) {
 									_iterator5.return();
 								}
 
-							case 84:
-								_context2.prev = 84;
+							case 80:
+								_context2.prev = 80;
 
 								if (!_didIteratorError5) {
-									_context2.next = 87;
+									_context2.next = 83;
 									break;
 								}
 
 								throw _iteratorError5;
 
-							case 87:
-								return _context2.finish(84);
+							case 83:
+								return _context2.finish(80);
 
-							case 88:
-								return _context2.finish(81);
+							case 84:
+								return _context2.finish(77);
 
-							case 89:
+							case 85:
 
 								if (this.objects.size || this.options.libraries.static.list.size) {
 									link.append(this.objects);
@@ -1069,53 +1072,53 @@ var Target = exports.Target = function () {
 								}
 
 								if (!target.commands) {
-									_context2.next = 111;
+									_context2.next = 107;
 									break;
 								}
 
 								_iteratorNormalCompletion6 = true;
 								_didIteratorError6 = false;
 								_iteratorError6 = undefined;
-								_context2.prev = 95;
+								_context2.prev = 91;
 
 								for (_iterator6 = target.commands[Symbol.iterator](); !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
 									cmd = _step6.value;
 
 									link.commands.add(cmd);
-								}_context2.next = 103;
+								}_context2.next = 99;
 								break;
 
-							case 99:
-								_context2.prev = 99;
-								_context2.t2 = _context2['catch'](95);
+							case 95:
+								_context2.prev = 95;
+								_context2.t2 = _context2['catch'](91);
 								_didIteratorError6 = true;
 								_iteratorError6 = _context2.t2;
 
-							case 103:
-								_context2.prev = 103;
-								_context2.prev = 104;
+							case 99:
+								_context2.prev = 99;
+								_context2.prev = 100;
 
 								if (!_iteratorNormalCompletion6 && _iterator6.return) {
 									_iterator6.return();
 								}
 
-							case 106:
-								_context2.prev = 106;
+							case 102:
+								_context2.prev = 102;
 
 								if (!_didIteratorError6) {
-									_context2.next = 109;
+									_context2.next = 105;
 									break;
 								}
 
 								throw _iteratorError6;
 
-							case 109:
-								return _context2.finish(106);
+							case 105:
+								return _context2.finish(102);
 
-							case 110:
-								return _context2.finish(103);
+							case 106:
+								return _context2.finish(99);
 
-							case 111:
+							case 107:
 
 								this.rules.add(link);
 
@@ -1127,22 +1130,22 @@ var Target = exports.Target = function () {
 								}
 
 								log(this);
-								_context2.next = 120;
+								_context2.next = 116;
 								break;
 
-							case 116:
-								_context2.prev = 116;
+							case 112:
+								_context2.prev = 112;
 								_context2.t3 = _context2['catch'](0);
 
 								log(_context2.t3);
 								throw _context2.t3;
 
-							case 120:
+							case 116:
 							case 'end':
 								return _context2.stop();
 						}
 					}
-				}, _callee2, this, [[0, 116], [21, 25, 29, 37], [30,, 32, 36], [65, 77, 81, 89], [82,, 84, 88], [95, 99, 103, 111], [104,, 106, 110]]);
+				}, _callee2, this, [[0, 112], [21, 25, 29, 37], [30,, 32, 36], [61, 73, 77, 85], [78,, 80, 84], [91, 95, 99, 107], [100,, 102, 106]]);
 			}));
 
 			function parse(_x7, _x8) {
