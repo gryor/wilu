@@ -591,7 +591,7 @@ export class Target {
 
 			this.linker.options.add(this.options.linker);
 			this.linker.options.add(this.options.machine);
-			this.linker.options.add(this.options.definitions);
+			//this.linker.options.add(this.options.definitions);
 			this.linker.options.add(this.options.search.libraries);
 			this.linker.options.add(this.options.search.scripts);
 			this.linker.options.add(this.options.scripts);

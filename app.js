@@ -932,7 +932,7 @@ var Target = exports.Target = function () {
 
 								this.linker.options.add(this.options.linker);
 								this.linker.options.add(this.options.machine);
-								this.linker.options.add(this.options.definitions);
+								//this.linker.options.add(this.options.definitions);
 								this.linker.options.add(this.options.search.libraries);
 								this.linker.options.add(this.options.search.scripts);
 								this.linker.options.add(this.options.scripts);
@@ -946,7 +946,7 @@ var Target = exports.Target = function () {
 								_iteratorNormalCompletion5 = true;
 								_didIteratorError5 = false;
 								_iteratorError5 = undefined;
-								_context2.prev = 66;
+								_context2.prev = 65;
 
 								_loop2 = function _loop2() {
 									var _step5$value = _slicedToArray(_step5.value, 2);
@@ -971,61 +971,61 @@ var Target = exports.Target = function () {
 
 								_iterator5 = this.tools[Symbol.iterator]();
 
-							case 69:
+							case 68:
 								if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
-									_context2.next = 76;
+									_context2.next = 75;
 									break;
 								}
 
 								_ret5 = _loop2();
 
 								if (!(_ret5 === 'continue')) {
-									_context2.next = 73;
+									_context2.next = 72;
 									break;
 								}
 
-								return _context2.abrupt('continue', 73);
+								return _context2.abrupt('continue', 72);
 
-							case 73:
+							case 72:
 								_iteratorNormalCompletion5 = true;
-								_context2.next = 69;
+								_context2.next = 68;
 								break;
 
-							case 76:
-								_context2.next = 82;
+							case 75:
+								_context2.next = 81;
 								break;
 
-							case 78:
-								_context2.prev = 78;
-								_context2.t1 = _context2['catch'](66);
+							case 77:
+								_context2.prev = 77;
+								_context2.t1 = _context2['catch'](65);
 								_didIteratorError5 = true;
 								_iteratorError5 = _context2.t1;
 
-							case 82:
+							case 81:
+								_context2.prev = 81;
 								_context2.prev = 82;
-								_context2.prev = 83;
 
 								if (!_iteratorNormalCompletion5 && _iterator5.return) {
 									_iterator5.return();
 								}
 
-							case 85:
-								_context2.prev = 85;
+							case 84:
+								_context2.prev = 84;
 
 								if (!_didIteratorError5) {
-									_context2.next = 88;
+									_context2.next = 87;
 									break;
 								}
 
 								throw _iteratorError5;
 
+							case 87:
+								return _context2.finish(84);
+
 							case 88:
-								return _context2.finish(85);
+								return _context2.finish(81);
 
 							case 89:
-								return _context2.finish(82);
-
-							case 90:
 
 								if (this.objects.size || this.options.libraries.static.list.size) {
 									link.append(this.objects);
@@ -1069,53 +1069,53 @@ var Target = exports.Target = function () {
 								}
 
 								if (!target.commands) {
-									_context2.next = 112;
+									_context2.next = 111;
 									break;
 								}
 
 								_iteratorNormalCompletion6 = true;
 								_didIteratorError6 = false;
 								_iteratorError6 = undefined;
-								_context2.prev = 96;
+								_context2.prev = 95;
 
 								for (_iterator6 = target.commands[Symbol.iterator](); !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
 									cmd = _step6.value;
 
 									link.commands.add(cmd);
-								}_context2.next = 104;
+								}_context2.next = 103;
 								break;
 
-							case 100:
-								_context2.prev = 100;
-								_context2.t2 = _context2['catch'](96);
+							case 99:
+								_context2.prev = 99;
+								_context2.t2 = _context2['catch'](95);
 								_didIteratorError6 = true;
 								_iteratorError6 = _context2.t2;
 
-							case 104:
+							case 103:
+								_context2.prev = 103;
 								_context2.prev = 104;
-								_context2.prev = 105;
 
 								if (!_iteratorNormalCompletion6 && _iterator6.return) {
 									_iterator6.return();
 								}
 
-							case 107:
-								_context2.prev = 107;
+							case 106:
+								_context2.prev = 106;
 
 								if (!_didIteratorError6) {
-									_context2.next = 110;
+									_context2.next = 109;
 									break;
 								}
 
 								throw _iteratorError6;
 
+							case 109:
+								return _context2.finish(106);
+
 							case 110:
-								return _context2.finish(107);
+								return _context2.finish(103);
 
 							case 111:
-								return _context2.finish(104);
-
-							case 112:
 
 								this.rules.add(link);
 
@@ -1127,22 +1127,22 @@ var Target = exports.Target = function () {
 								}
 
 								log(this);
-								_context2.next = 121;
+								_context2.next = 120;
 								break;
 
-							case 117:
-								_context2.prev = 117;
+							case 116:
+								_context2.prev = 116;
 								_context2.t3 = _context2['catch'](0);
 
 								log(_context2.t3);
 								throw _context2.t3;
 
-							case 121:
+							case 120:
 							case 'end':
 								return _context2.stop();
 						}
 					}
-				}, _callee2, this, [[0, 117], [21, 25, 29, 37], [30,, 32, 36], [66, 78, 82, 90], [83,, 85, 89], [96, 100, 104, 112], [105,, 107, 111]]);
+				}, _callee2, this, [[0, 116], [21, 25, 29, 37], [30,, 32, 36], [65, 77, 81, 89], [82,, 84, 88], [95, 99, 103, 111], [104,, 106, 110]]);
 			}));
 
 			function parse(_x7, _x8) {
