@@ -849,7 +849,7 @@ var Target = exports.Target = function () {
 
 							case 37:
 
-								target.extensions = target.extension || {};
+								target.extensions = target.extensions || {};
 								target.extensions.c = target.extensions.c || ['c'];
 								target.extensions.asm = target.extensions.asm || ['s', 'S'];
 								target.extensions['c++'] = target.extensions['c++'] || ['cc', 'cpp'];
