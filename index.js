@@ -685,7 +685,7 @@ export class Target {
 
 			if(target.commands) {
 				for(let cmd of target.commands)
-					link.commands.add(cmd);
+					link.commands.add(['cd', this.sources.path + '; ', cmd].join(' '));
 			}
 
 			this.rules.add(link);
