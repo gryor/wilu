@@ -684,8 +684,13 @@ export class Target {
 			}
 
 			if(target.commands) {
-				for(let cmd of target.commands)
-					link.commands.add(['cd', this.sources.path + '; ', cmd].join(' '));
+				for(let cmd of target.commands) {
+					if(this.sources && this.sources.path !== undefined)
+						link.commands.add(['cd', this.sources.path + ';', cmd].join(' '));
+					else
+						link.commands.add(cmd);
+				}
+				
 			}
 
 			this.rules.add(link);

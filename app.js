@@ -1084,8 +1084,10 @@ var Target = exports.Target = function () {
 								for (_iterator6 = target.commands[Symbol.iterator](); !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
 									cmd = _step6.value;
 
-									link.commands.add(['cd', this.sources.path + '; ', cmd].join(' '));
-								}_context2.next = 99;
+									if (this.sources && this.sources.path !== undefined) link.commands.add(['cd', this.sources.path + ';', cmd].join(' '));else link.commands.add(cmd);
+								}
+
+								_context2.next = 99;
 								break;
 
 							case 95:
