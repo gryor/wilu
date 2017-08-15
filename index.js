@@ -699,7 +699,7 @@ export class Target {
 
 			if(files.size || this.options.libraries.static.list.size) {
 				let clean = new LinkRule({name: 'clean-' + this.target});
-				clean.commands.add('rm -rf ' + this.directories.base);
+				clean.commands.add('rm -rf ' + path.join(this.directories.base, this.directories.output));
 				this.rules.add(clean);
 			}
 
@@ -800,7 +800,7 @@ export class Makefile {
 			let rules = new Set([...this.targets].map(({rules}) => rules).reduce((a, b) => [...a, ...b]));
 			let clean = new LinkRule({name: 'clean'});
 
-			clean.append([...rules].filter((rule) => (rule instanceof LinkRule && rule.depends.size && rule.commands.size)).map((rule) => 'clean-' + rule.name));
+			clean.append([...rules].filter((rule) => (rule instanceof LinkRule && rule.name.startsWith('clean-') && rule.commands.size)).map((rule) => rule.name));
 
 			rules.add(clean);
 

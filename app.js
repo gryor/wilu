@@ -1129,7 +1129,7 @@ var Target = exports.Target = function () {
 								if (files.size || this.options.libraries.static.list.size) {
 									clean = new LinkRule({ name: 'clean-' + this.target });
 
-									clean.commands.add('rm -rf ' + this.directories.base);
+									clean.commands.add('rm -rf ' + _path2.default.join(this.directories.base, this.directories.output));
 									this.rules.add(clean);
 								}
 
@@ -1444,9 +1444,9 @@ var Makefile = exports.Makefile = function () {
 
 
 								clean.append([].concat(_toConsumableArray(rules)).filter(function (rule) {
-									return rule instanceof LinkRule && rule.depends.size && rule.commands.size;
+									return rule instanceof LinkRule && rule.name.startsWith('clean-') && rule.commands.size;
 								}).map(function (rule) {
-									return 'clean-' + rule.name;
+									return rule.name;
 								}));
 
 								rules.add(clean);
