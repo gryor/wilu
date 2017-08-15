@@ -465,6 +465,8 @@ export class Target {
 
 			Object.assign(this.directories, target.directories);
 
+			this.directories.base = path.join(this.directories.base, this.name);
+
 			if(target.options) {
 				for(let type in target.options.compiler) {
 					let options = this.options.compiler.get(type) || new Options({prefix: '-'});
