@@ -735,9 +735,11 @@ export class Makefile {
 					if(this.imported.has(modname))
 						continue;
 
+					let modpath = path.dirname(require.resolve(modname));
+
 					this.imported.add(modname);
 
-					let modpkg = require(path.join(modname, 'package.json'));
+					let modpkg = require(path.join(modpath, 'package.json'));
 
 					if(!modpkg.build.name)
 						modpkg.build.name = modpkg.name;
@@ -746,7 +748,7 @@ export class Makefile {
 						modpkg.build.version = modpkg.version;
 
 					modpkg.build.modname = modname;
-					modpkg.build.home = path.relative(path.dirname(module.filename), path.dirname(require.resolve(modname)));
+					modpkg.build.home = path.relative(path.dirname(module.filename), modpath);
 
 					let mod = await this.load(modpkg.build);
 
