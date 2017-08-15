@@ -1253,7 +1253,7 @@ var Makefile = exports.Makefile = function () {
 								if (!modpkg.build.version) modpkg.build.version = modpkg.version;
 
 								modpkg.build.modname = modname;
-								modpkg.build.home = _path2.default.relative(_path2.default.dirname(module.filename), modpath);
+								modpkg.build.home = _path2.default.relative(homepath, modpath);
 
 								_context3.next = 34;
 								return this.load(modpkg.build);

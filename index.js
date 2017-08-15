@@ -749,7 +749,7 @@ export class Makefile {
 						modpkg.build.version = modpkg.version;
 
 					modpkg.build.modname = modname;
-					modpkg.build.home = path.relative(path.dirname(module.filename), modpath);
+					modpkg.build.home = path.relative(homepath, modpath);
 
 					let mod = await this.load(modpkg.build);
 
