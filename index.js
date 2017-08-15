@@ -730,6 +730,7 @@ export class Makefile {
 
 				let target = build[name];
 				let imports = new Set(target.import);
+				let homepath = path.dirname(module.parent ? module.parent.filename : module.filename)
 
 				for(let modname of imports) {
 					if(this.imported.has(modname))

@@ -1173,7 +1173,7 @@ var Makefile = exports.Makefile = function () {
 		key: 'load',
 		value: function () {
 			var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee3(build) {
-				var name, target, imports, _iteratorNormalCompletion7, _didIteratorError7, _iteratorError7, _iterator7, _step7, modname, modpath, modpkg, mod, t, _name, _target, merges, _iteratorNormalCompletion8, _didIteratorError8, _iteratorError8, _iterator8, _step8, merge;
+				var name, target, imports, homepath, _iteratorNormalCompletion7, _didIteratorError7, _iteratorError7, _iterator7, _step7, modname, modpath, modpkg, mod, t, _name, _target, merges, _iteratorNormalCompletion8, _didIteratorError8, _iteratorError8, _iterator8, _step8, merge;
 
 				return regeneratorRuntime.wrap(function _callee3$(_context3) {
 					while (1) {
@@ -1201,7 +1201,7 @@ var Makefile = exports.Makefile = function () {
 
 							case 9:
 								if ((_context3.t1 = _context3.t0()).done) {
-									_context3.next = 54;
+									_context3.next = 55;
 									break;
 								}
 
@@ -1217,28 +1217,29 @@ var Makefile = exports.Makefile = function () {
 							case 13:
 								target = build[name];
 								imports = new Set(target.import);
+								homepath = _path2.default.dirname(module.parent ? module.parent.filename : module.filename);
 								_iteratorNormalCompletion7 = true;
 								_didIteratorError7 = false;
 								_iteratorError7 = undefined;
-								_context3.prev = 18;
+								_context3.prev = 19;
 								_iterator7 = imports[Symbol.iterator]();
 
-							case 20:
+							case 21:
 								if (_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done) {
-									_context3.next = 38;
+									_context3.next = 39;
 									break;
 								}
 
 								modname = _step7.value;
 
 								if (!this.imported.has(modname)) {
-									_context3.next = 24;
+									_context3.next = 25;
 									break;
 								}
 
-								return _context3.abrupt('continue', 35);
+								return _context3.abrupt('continue', 36);
 
-							case 24:
+							case 25:
 								modpath = _path2.default.dirname(require.resolve(modname));
 
 
@@ -1254,10 +1255,10 @@ var Makefile = exports.Makefile = function () {
 								modpkg.build.modname = modname;
 								modpkg.build.home = _path2.default.relative(_path2.default.dirname(module.filename), modpath);
 
-								_context3.next = 33;
+								_context3.next = 34;
 								return this.load(modpkg.build);
 
-							case 33:
+							case 34:
 								mod = _context3.sent;
 
 
@@ -1265,74 +1266,74 @@ var Makefile = exports.Makefile = function () {
 									build[modname + '_' + t] = mod[t];
 								}
 
-							case 35:
+							case 36:
 								_iteratorNormalCompletion7 = true;
-								_context3.next = 20;
+								_context3.next = 21;
 								break;
 
-							case 38:
-								_context3.next = 44;
+							case 39:
+								_context3.next = 45;
 								break;
 
-							case 40:
-								_context3.prev = 40;
-								_context3.t2 = _context3['catch'](18);
+							case 41:
+								_context3.prev = 41;
+								_context3.t2 = _context3['catch'](19);
 								_didIteratorError7 = true;
 								_iteratorError7 = _context3.t2;
 
-							case 44:
-								_context3.prev = 44;
+							case 45:
 								_context3.prev = 45;
+								_context3.prev = 46;
 
 								if (!_iteratorNormalCompletion7 && _iterator7.return) {
 									_iterator7.return();
 								}
 
-							case 47:
-								_context3.prev = 47;
+							case 48:
+								_context3.prev = 48;
 
 								if (!_didIteratorError7) {
-									_context3.next = 50;
+									_context3.next = 51;
 									break;
 								}
 
 								throw _iteratorError7;
 
-							case 50:
-								return _context3.finish(47);
-
 							case 51:
-								return _context3.finish(44);
+								return _context3.finish(48);
 
 							case 52:
+								return _context3.finish(45);
+
+							case 53:
 								_context3.next = 9;
 								break;
 
-							case 54:
+							case 55:
 								_context3.t3 = regeneratorRuntime.keys(build);
 
-							case 55:
+							case 56:
 								if ((_context3.t4 = _context3.t3()).done) {
-									_context3.next = 82;
+									_context3.next = 83;
 									break;
 								}
 
 								_name = _context3.t4.value;
 
 								if (build[_name].merge) {
-									_context3.next = 59;
+									_context3.next = 60;
 									break;
 								}
 
-								return _context3.abrupt('continue', 55);
+								return _context3.abrupt('continue', 56);
 
-							case 59:
+							case 60:
 								_target = build[_name];
 								merges = new Set(_target.merge);
 								_iteratorNormalCompletion8 = true;
 								_didIteratorError8 = false;
 								_iteratorError8 = undefined;
-								_context3.prev = 64;
+								_context3.prev = 65;
 
 
 								for (_iterator8 = merges[Symbol.iterator](); !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
@@ -1340,57 +1341,57 @@ var Makefile = exports.Makefile = function () {
 
 									reduceObjects(build[merge], _target);
 								}
-								_context3.next = 72;
+								_context3.next = 73;
 								break;
 
-							case 68:
-								_context3.prev = 68;
-								_context3.t5 = _context3['catch'](64);
+							case 69:
+								_context3.prev = 69;
+								_context3.t5 = _context3['catch'](65);
 								_didIteratorError8 = true;
 								_iteratorError8 = _context3.t5;
 
-							case 72:
-								_context3.prev = 72;
+							case 73:
 								_context3.prev = 73;
+								_context3.prev = 74;
 
 								if (!_iteratorNormalCompletion8 && _iterator8.return) {
 									_iterator8.return();
 								}
 
-							case 75:
-								_context3.prev = 75;
+							case 76:
+								_context3.prev = 76;
 
 								if (!_didIteratorError8) {
-									_context3.next = 78;
+									_context3.next = 79;
 									break;
 								}
 
 								throw _iteratorError8;
 
-							case 78:
-								return _context3.finish(75);
-
 							case 79:
-								return _context3.finish(72);
+								return _context3.finish(76);
 
 							case 80:
-								_context3.next = 55;
+								return _context3.finish(73);
+
+							case 81:
+								_context3.next = 56;
 								break;
 
-							case 82:
+							case 83:
 								return _context3.abrupt('return', build);
 
-							case 85:
-								_context3.prev = 85;
+							case 86:
+								_context3.prev = 86;
 								_context3.t6 = _context3['catch'](0);
 								throw _context3.t6;
 
-							case 88:
+							case 89:
 							case 'end':
 								return _context3.stop();
 						}
 					}
-				}, _callee3, this, [[0, 85], [18, 40, 44, 52], [45,, 47, 51], [64, 68, 72, 80], [73,, 75, 79]]);
+				}, _callee3, this, [[0, 86], [19, 41, 45, 53], [46,, 48, 52], [65, 69, 73, 81], [74,, 76, 80]]);
 			}));
 
 			function load(_x9) {
