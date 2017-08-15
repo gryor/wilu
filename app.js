@@ -961,7 +961,7 @@ var Target = exports.Target = function () {
 
 									if (!files.has(type)) return 'continue';
 
-									var directory = _path2.default.join(_this4.directories.base, _this4.directories.objects, _this4.name, _this4.target);
+									var directory = _path2.default.join(_this4.directories.base, _this4.directories.objects, _this4.target);
 									var objects = [].concat(_toConsumableArray(files.get(type))).map(function (file) {
 										return _path2.default.join(directory, _this4.sources.path, file + '.o');
 									});

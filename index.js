@@ -611,7 +611,7 @@ export class Target {
 				if(!files.has(type))
 					continue;
 
-				let directory = path.join(this.directories.base, this.directories.objects, this.name, this.target);
+				let directory = path.join(this.directories.base, this.directories.objects, this.target);
 				let objects = [...files.get(type)].map((file) => path.join(directory, this.sources.path, file + '.o'));
 				this.objects = new Set([...this.objects, ...objects]);
 
