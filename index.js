@@ -209,6 +209,25 @@ export class Path {
 	extname() {
 		return npath.extname(this.current);
 	}
+
+	updirs() {
+		const updir = '..' + npath.sep;
+		let count = 0;
+
+		while(this.current.startsWith(updir, updir.length * count))
+			count++;
+
+		return count;
+	}
+
+	withoutUpdirs() {
+		try {
+			const updir = '..' + npath.sep;
+			return new Path(this.current.slice(updir.length * this.updirs()));
+		} catch(e) {
+			throw(e);
+		}
+	}
 }
 
 export class Paths {
@@ -336,7 +355,7 @@ export class CompileRule {
 	targets = new Set();
 	commands = new Set();
 
-	constructor({extension, directory, src} = {}) {
+	constructor({extension, directory, src, updirs} = {}) {
 		try {
 			if(extension)
 				this.extension = extension;
@@ -344,6 +363,8 @@ export class CompileRule {
 				this.src = new Path(src);
 			
 			this.directory = new Path(directory);
+
+			this.updirs = updirs || '';
 		} catch(e) {
 			throw(e);
 		}
@@ -352,7 +373,7 @@ export class CompileRule {
 	toString() {
 		try {
 			return [...this.targets].join(' ')
-			+ ': ' + this.directory.join('%' + (this.extension ? ('.' + this.extension) + ': %' : ': ' + this.src.join('%')))
+			+ ': ' + this.directory.join('%' + (this.extension ? ('.' + this.extension) + ': ' + this.updirs + '%' : ': ' + this.updirs + this.src.join('%')))
 			+ [...this.commands].map((cmd) => (`\n\t@${cmd}`)).join('');
 		} catch(e) {
 			throw e;
@@ -428,12 +449,14 @@ export class Sources {
 	includes = new Set();
 	excludes = new Set();
 	path = undefined;
+	updirs = '';
 	_cache = null;
 
 	constructor({path} = {}) {
 		try {
-			if(path)
+			if(path) {
 				this.path = new Path(path);
+			}
 		} catch(e) {
 			throw(e);
 		}
@@ -468,6 +491,9 @@ export class Sources {
 			for(let exclude of this.excludes) {
 				this.includes.delete(exclude);
 			}
+
+			this.updirs = ('..' + npath.sep).repeat(this.path.updirs());
+			this.pathWithoutUpdirs = this.path.withoutUpdirs();
 
 			this._cache = await Promise.all([...this.includes].map((pattern) => aglob(pattern, {cwd: this.path.toString()})));
 			this._cache = this._cache.reduce((all, current) => [...all, ...current]);
@@ -742,10 +768,10 @@ export class Target {
 					continue;
 
 				let directory = this.directories.objects.join(this.target);
-				let objects = [...files.get(type)].map((file) => directory.join(this.sources.path, file + '.o'));
+				let objects = [...files.get(type)].map((file) => directory.join(this.sources.pathWithoutUpdirs, file + '.o'));
 				this.objects = new Set([...this.objects, ...objects]);
 
-				let rule = new CompileRule({extension: 'o', directory});
+				let rule = new CompileRule({extension: 'o', directory, updirs: this.sources.updirs});
 				rule.append(objects);
 				rule.commands.add('mkdir -p ${dir $@}');
 				rule.commands.add(tool + ' -c $< -o $@')

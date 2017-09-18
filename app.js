@@ -256,6 +256,26 @@ var Path = exports.Path = function () {
 		value: function extname() {
 			return _path2.default.extname(this.current);
 		}
+	}, {
+		key: 'updirs',
+		value: function updirs() {
+			var updir = '..' + _path2.default.sep;
+			var count = 0;
+
+			while (this.current.startsWith(updir, updir.length * count)) {
+				count++;
+			}return count;
+		}
+	}, {
+		key: 'withoutUpdirs',
+		value: function withoutUpdirs() {
+			try {
+				var updir = '..' + _path2.default.sep;
+				return new Path(this.current.slice(updir.length * this.updirs()));
+			} catch (e) {
+				throw e;
+			}
+		}
 	}]);
 
 	return Path;
@@ -436,6 +456,7 @@ var CompileRule = exports.CompileRule = function () {
 		var extension = _ref3.extension;
 		var directory = _ref3.directory;
 		var src = _ref3.src;
+		var updirs = _ref3.updirs;
 
 		_classCallCheck(this, CompileRule);
 
@@ -446,6 +467,8 @@ var CompileRule = exports.CompileRule = function () {
 			if (extension) this.extension = extension;else this.src = new Path(src);
 
 			this.directory = new Path(directory);
+
+			this.updirs = updirs || '';
 		} catch (e) {
 			throw e;
 		}
@@ -455,7 +478,7 @@ var CompileRule = exports.CompileRule = function () {
 		key: 'toString',
 		value: function toString() {
 			try {
-				return [].concat(_toConsumableArray(this.targets)).join(' ') + ': ' + this.directory.join('%' + (this.extension ? '.' + this.extension + ': %' : ': ' + this.src.join('%'))) + [].concat(_toConsumableArray(this.commands)).map(function (cmd) {
+				return [].concat(_toConsumableArray(this.targets)).join(' ') + ': ' + this.directory.join('%' + (this.extension ? '.' + this.extension + ': ' + this.updirs + '%' : ': ' + this.updirs + this.src.join('%'))) + [].concat(_toConsumableArray(this.commands)).map(function (cmd) {
 					return '\n\t@' + cmd;
 				}).join('');
 			} catch (e) {
@@ -563,10 +586,13 @@ var Sources = exports.Sources = function () {
 		this.includes = new Set();
 		this.excludes = new Set();
 		this.path = undefined;
+		this.updirs = '';
 		this._cache = null;
 
 		try {
-			if (path) this.path = new Path(path);
+			if (path) {
+				this.path = new Path(path);
+			}
 		} catch (e) {
 			throw e;
 		}
@@ -666,12 +692,15 @@ var Sources = exports.Sources = function () {
 								return _context.finish(16);
 
 							case 24:
-								_context.next = 26;
+								this.updirs = ('..' + _path2.default.sep).repeat(this.path.updirs());
+								this.pathWithoutUpdirs = this.path.withoutUpdirs();
+
+								_context.next = 28;
 								return Promise.all([].concat(_toConsumableArray(this.includes)).map(function (pattern) {
 									return aglob(pattern, { cwd: _this3.path.toString() });
 								}));
 
-							case 26:
+							case 28:
 								this._cache = _context.sent;
 
 								this._cache = this._cache.reduce(function (all, current) {
@@ -681,7 +710,7 @@ var Sources = exports.Sources = function () {
 								_iteratorNormalCompletion2 = true;
 								_didIteratorError2 = false;
 								_iteratorError2 = undefined;
-								_context.prev = 31;
+								_context.prev = 33;
 
 								_loop = function _loop() {
 									var exclude = _step2.value;
@@ -693,55 +722,55 @@ var Sources = exports.Sources = function () {
 
 								for (_iterator2 = this.excludes[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
 									_loop();
-								}_context.next = 40;
+								}_context.next = 42;
 								break;
 
-							case 36:
-								_context.prev = 36;
-								_context.t1 = _context['catch'](31);
+							case 38:
+								_context.prev = 38;
+								_context.t1 = _context['catch'](33);
 								_didIteratorError2 = true;
 								_iteratorError2 = _context.t1;
 
-							case 40:
-								_context.prev = 40;
-								_context.prev = 41;
+							case 42:
+								_context.prev = 42;
+								_context.prev = 43;
 
 								if (!_iteratorNormalCompletion2 && _iterator2.return) {
 									_iterator2.return();
 								}
 
-							case 43:
-								_context.prev = 43;
+							case 45:
+								_context.prev = 45;
 
 								if (!_didIteratorError2) {
-									_context.next = 46;
+									_context.next = 48;
 									break;
 								}
 
 								throw _iteratorError2;
 
-							case 46:
-								return _context.finish(43);
-
-							case 47:
-								return _context.finish(40);
-
 							case 48:
+								return _context.finish(45);
+
+							case 49:
+								return _context.finish(42);
+
+							case 50:
 								this._cache = new Set(this._cache);
 
 								return _context.abrupt('return', this._cache);
 
-							case 52:
-								_context.prev = 52;
+							case 54:
+								_context.prev = 54;
 								_context.t2 = _context['catch'](0);
 								throw _context.t2;
 
-							case 55:
+							case 57:
 							case 'end':
 								return _context.stop();
 						}
 					}
-				}, _callee, this, [[0, 52], [8, 12, 16, 24], [17,, 19, 23], [31, 36, 40, 48], [41,, 43, 47]]);
+				}, _callee, this, [[0, 54], [8, 12, 16, 24], [17,, 19, 23], [33, 38, 42, 50], [43,, 45, 49]]);
 			}));
 
 			function files() {
@@ -1129,11 +1158,11 @@ var Target = exports.Target = function () {
 
 									var directory = _this5.directories.objects.join(_this5.target);
 									var objects = [].concat(_toConsumableArray(files.get(type))).map(function (file) {
-										return directory.join(_this5.sources.path, file + '.o');
+										return directory.join(_this5.sources.pathWithoutUpdirs, file + '.o');
 									});
 									_this5.objects = new Set([].concat(_toConsumableArray(_this5.objects), _toConsumableArray(objects)));
 
-									var rule = new CompileRule({ extension: 'o', directory: directory });
+									var rule = new CompileRule({ extension: 'o', directory: directory, updirs: _this5.sources.updirs });
 									rule.append(objects);
 									rule.commands.add('mkdir -p ${dir $@}');
 									rule.commands.add(tool + ' -c $< -o $@');
