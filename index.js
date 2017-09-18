@@ -1,5 +1,5 @@
 import debug from 'debug';
-import path from 'path';
+import npath from 'path';
 import glob from 'glob';
 import minimatch from 'minimatch';
 import fs from 'fs';
@@ -112,6 +112,93 @@ function combine(parent, childs) {
 	}
 }
 
+export class Path {
+	current = '';
+
+	constructor() {
+		try {
+			for(let i = 0; i <  arguments.length; i++) {
+				if(arguments[i] === undefined)
+					throw new Error('undefined path');
+
+				let e = arguments[i] = arguments[i].toString();
+
+				if(e.length > 1 && e.endsWith(npath.sep))
+					arguments[i] = e.slice(0, -1);
+			}
+
+			if(arguments.length > 1)
+				this.add(...arguments);
+			else if(arguments.length === 1)
+				this.current = arguments[0];
+		} catch(e) {
+			throw(e);
+		}
+	}
+
+	toString() {
+		return this.current;
+	}
+
+	add() {
+		if(this.current.length > 0)
+			this.current = [this.current, ...arguments].join(npath.sep);
+		else
+			this.current = [...arguments].join(npath.sep);
+	}
+
+	join() {
+		return new Path(this.current, ...arguments);
+	}
+
+	joinEach(paths) {
+		if(!(paths instanceof Set))
+			paths = new Set(paths);
+
+		paths = [...paths].map(e => this.join(e));
+	}
+
+	absolute() {
+		return new Path(npath.resolve(this.current));
+	}
+
+	isAbsolute() {
+		return npath.isAbsolute(this.current);
+	}
+
+	relative(to) {
+		return new Path(npath.relative(this.current, to.toString()));
+	}
+
+	normalize() {
+		return new Path(npath.normalize(this.current));
+	}
+
+	dirname() {
+		return new Path(npath.dirname(this.current));
+	}
+
+	basename() {
+		return npath.basename(this.current, ...arguments);
+	}
+
+	extname() {
+		return npath.extname(this.current);
+	}
+}
+
+export class Paths {
+	constructor() {
+		this.home = new Path(npath.relative('.', npath.dirname(module.parent ? module.parent.filename : module.filename)));
+	}
+
+	module(name) {
+		return this.home.relative(npath.dirname(require.resolve(name)));
+	}
+}
+
+let paths = new Paths();
+
 export class Version {
 	major = 0;
 	minor = 0;
@@ -216,25 +303,19 @@ export class Tool {
 export class CompileRule {
 	targets = new Set();
 	commands = new Set();
-	extension = null;
-	directory = null;
-	src = null;
 
 	constructor({extension, directory, src} = {}) {
 		if(extension)
 			this.extension = extension;
 
-		if(directory)
-			this.directory = directory;
-
-		if(src)
-			this.src = src;
+		this.directory = new Path(directory);
+		this.src = new Path(src);
 	}
 
 	toString() {
 		try {
 			return [...this.targets].join(' ')
-			+ ': ' + path.join(this.directory, '%' + (this.extension ? ('.' + this.extension) + ': %' : ': ' + path.join(this.src, '%')))
+			+ ': ' + this.directory.join('%' + (this.extension ? ('.' + this.extension) + ': %' : ': ' + this.src.join('%')))
 			+ [...this.commands].map((cmd) => (`\n\t@${cmd}`)).join('');
 		} catch(e) {
 			throw e;
@@ -314,7 +395,7 @@ export class Sources {
 
 	constructor({path} = {}) {
 		if(path)
-			this.path = path;
+			this.path = new Path(path);
 	}
 
 	include(values) {
@@ -347,7 +428,7 @@ export class Sources {
 				this.includes.delete(exclude);
 			}
 
-			this._cache = await Promise.all([...this.includes].map((pattern) => aglob(pattern, {cwd: this.path})));
+			this._cache = await Promise.all([...this.includes].map((pattern) => aglob(pattern, {cwd: this.path.toString()})));
 			this._cache = this._cache.reduce((all, current) => [...all, ...current]);
 
 			for(let exclude of this.excludes)
@@ -435,7 +516,7 @@ export class Target {
 
 	async parse(name, target) {
 		try {
-			log({name, target});
+			//log({name, target});
 
 			this.target = name;
 			this.name = target.name || 'app';
@@ -465,7 +546,15 @@ export class Target {
 
 			Object.assign(this.directories, target.directories);
 
-			this.directories.base = path.join(this.directories.base, this.name);
+			this.directories.base = new Path(this.directories.base);
+			this.directories.base.add(this.name);
+
+			for(let key in this.directories) {
+				if(key === 'base')
+					continue;
+
+				this.directories[key] = this.directories.base.join(this.directories[key]);
+			}
 
 			if(target.options) {
 				for(let type in target.options.compiler) {
@@ -489,7 +578,7 @@ export class Target {
 					if(target.home) {
 						for(let search in target.search) {
 							this.options.search[search].append(target.search[search]
-							.map((p) => (path.isAbsolute(p) ? p : path.join(target.home, p))));
+							.map((p) => (npath.isAbsolute(p) ? p : target.home.join(p))));
 						}
 					}
 
@@ -534,13 +623,13 @@ export class Target {
 			}
 
 			if(target.sources) {
-				this.sources.path = target.sources.path || 'src';
+				this.sources.path = new Path(target.sources.path || 'src');
 
 				if(target.home)
-					this.sources.path = path.join(target.home, this.sources.path);
+					this.sources.path = target.home.join(this.sources.path);
 
 				if(target.sources.subpath)
-					this.sources.path = path.join(this.sources.path, target.sources.subpath);
+					this.sources.path = this.sources.path.join(target.sources.subpath);
 
 				this.sources.include(target.sources.include);
 				this.sources.exclude(target.sources.exclude);
@@ -611,8 +700,8 @@ export class Target {
 				if(!files.has(type))
 					continue;
 
-				let directory = path.join(this.directories.base, this.directories.objects, this.target);
-				let objects = [...files.get(type)].map((file) => path.join(directory, this.sources.path, file + '.o'));
+				let directory = this.directories.objects.join(this.target);
+				let objects = [...files.get(type)].map((file) => directory.join(this.sources.path, file + '.o'));
 				this.objects = new Set([...this.objects, ...objects]);
 
 				let rule = new CompileRule({extension: 'o', directory});
@@ -627,11 +716,10 @@ export class Target {
 
 				link.commands.add([
 					'mkdir -p',
-					path.join(this.directories.base, this.directories.output)
+					this.directories.output
 				].join(' '));
 
-				let output = path.join(this.directories.base, this.directories.output,
-									   (this.library ? this.libname : this.name));
+				let output = this.directories.output.join(this.library ? this.libname : this.name);
 
 				if(this.library && !this.shared)
 					link.commands.add([this.linker, output, ...this.objects].join(' '));
@@ -646,37 +734,33 @@ export class Target {
 					link.commands.add([
 						'ln -sf',
 						this.libname,
-						path.join(this.directories.base, this.directories.output, `lib${this.name}.so`)
+						this.directories.output.join(`lib${this.name}.so`)
 					].join(' '));
 
 					link.commands.add([
 						'ln -sf',
 						this.libname,
-						path.join(this.directories.base, this.directories.output, `lib${this.name}.so.${this.version.major}`)
+						this.directories.output.join(`lib${this.name}.so.${this.version.major}`)
 					].join(' '));
 
 					link.commands.add([
 						'ln -sf',
 						this.libname,
-						path.join(this.directories.base, this.directories.output,
-								  `lib${this.name}.so.${this.version.major}.${this.version.minor}`)
+						this.directories.output.join(`lib${this.name}.so.${this.version.major}.${this.version.minor}`)
 					].join(' '));
 				}
 			}
 
 			if(files.has('copy')) {
-				let directory = path.join(this.directories.base, this.directories.output);
+				let directory = this.directories.output;
 				let rule = new CompileRule({directory, src: this.sources.path});
-				let targets = [...files.get('copy')].map((file) => path.join(directory, file));
+				let targets = [...files.get('copy')].map((file) => directory.join(file));
 				rule.append(targets);
 				rule.commands.add('mkdir -p ${dir $@}');
 				rule.commands.add([
 					'cd',
 					this.sources.path + '; cp --parents -t',
-					path.relative(
-						path.join(process.cwd(), this.sources.path),
-						path.join(process.cwd(), directory)
-					),
+					this.sources.path.absolute().relative(directory.absolute()),
 					'$*'
 				].join(' '));
 
@@ -699,12 +783,12 @@ export class Target {
 
 			if(files.size || this.options.libraries.static.list.size) {
 				let clean = new LinkRule({name: 'clean-' + this.target});
-				clean.commands.add('rm -rf ' + path.join(this.directories.base, this.directories.output));
+				clean.commands.add('rm -rf ' + this.directories.output);
 				this.rules.add(clean);
 			}
 
 
-			log(this);
+			//log(this);
 		} catch(e) {
 			log(e);
 			throw e;
@@ -732,17 +816,17 @@ export class Makefile {
 
 				let target = build[name];
 				let imports = new Set(target.import);
-				let homepath = path.dirname(module.parent ? module.parent.filename : module.filename)
 
 				for(let modname of imports) {
 					if(this.imported.has(modname))
 						continue;
 
-					let modpath = path.dirname(require.resolve(modname));
-
 					this.imported.add(modname);
 
-					let modpkg = require(path.join(modpath, 'package.json'));
+					log('import module', modname);
+
+					let modpath = paths.module(modname);
+					let modpkg = require(path.join(modname, 'package.json'));
 
 					if(!modpkg.build.name)
 						modpkg.build.name = modpkg.name;
@@ -751,12 +835,13 @@ export class Makefile {
 						modpkg.build.version = modpkg.version;
 
 					modpkg.build.modname = modname;
-					modpkg.build.home = path.relative(homepath, modpath);
+					modpkg.build.home = modpath;
 
 					let mod = await this.load(modpkg.build);
 
 					for(let t in mod) {
-						build[modname + '_' + t] = mod[t];
+						let modtargetname = modname + '_' + t;
+						build[modtargetname] = mod[t];
 					}
 				}
 			}
