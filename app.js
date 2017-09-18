@@ -1413,7 +1413,7 @@ var Makefile = exports.Makefile = function () {
 								log('import module', modname);
 
 								modpath = paths.module(modname);
-								modpkg = require(path.join(modname, 'package.json'));
+								modpkg = require(_path2.default.join(modname, 'package.json'));
 
 
 								if (!modpkg.build.name) modpkg.build.name = modpkg.name;

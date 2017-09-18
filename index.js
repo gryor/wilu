@@ -867,7 +867,7 @@ export class Makefile {
 					log('import module', modname);
 
 					let modpath = paths.module(modname);
-					let modpkg = require(path.join(modname, 'package.json'));
+					let modpkg = require(npath.join(modname, 'package.json'));
 
 					if(!modpkg.build.name)
 						modpkg.build.name = modpkg.name;
