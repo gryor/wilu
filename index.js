@@ -148,18 +148,30 @@ export class Path {
 	}
 
 	join() {
-		return new Path(this.current, ...arguments);
+		try {
+			return new Path(this.current, ...arguments);
+		} catch(e) {
+			throw(e);
+		}
 	}
 
 	joinEach(paths) {
-		if(!(paths instanceof Set))
-			paths = new Set(paths);
+		try {
+			if(!(paths instanceof Set))
+				paths = new Set(paths);
 
-		paths = [...paths].map(e => this.join(e));
+			paths = [...paths].map(e => this.join(e));
+		} catch(e) {
+			throw(e);
+		}
 	}
 
 	absolute() {
-		return new Path(npath.resolve(this.current));
+		try {
+			return new Path(npath.resolve(this.current));
+		} catch(e) {
+			throw(e);
+		}
 	}
 
 	isAbsolute() {
@@ -167,15 +179,27 @@ export class Path {
 	}
 
 	relative(to) {
-		return new Path(npath.relative(this.current, to.toString()));
+		try {
+			return new Path(npath.relative(this.current, to.toString()));
+		} catch(e) {
+			throw(e);
+		}
 	}
 
 	normalize() {
-		return new Path(npath.normalize(this.current));
+		try {
+			return new Path(npath.normalize(this.current));
+		} catch(e) {
+			throw(e);
+		}
 	}
 
 	dirname() {
-		return new Path(npath.dirname(this.current));
+		try {
+			return new Path(npath.dirname(this.current));
+		} catch(e) {
+			throw(e);
+		}
 	}
 
 	basename() {
@@ -189,11 +213,19 @@ export class Path {
 
 export class Paths {
 	constructor() {
-		this.home = new Path(npath.relative('.', npath.dirname(module.parent ? module.parent.filename : module.filename)));
+		try {
+			this.home = new Path(npath.relative('.', npath.dirname(module.parent ? module.parent.filename : module.filename)));
+		} catch(e) {
+			throw(e);
+		}
 	}
 
 	module(name) {
-		return this.home.relative(npath.dirname(require.resolve(name)));
+		try {
+			return this.home.relative(npath.dirname(require.resolve(name)));
+		} catch(e) {
+			throw(e);
+		}
 	}
 }
 
@@ -305,11 +337,16 @@ export class CompileRule {
 	commands = new Set();
 
 	constructor({extension, directory, src} = {}) {
-		if(extension)
-			this.extension = extension;
-
-		this.directory = new Path(directory);
-		this.src = new Path(src);
+		try {
+			if(extension)
+				this.extension = extension;
+			else
+				this.src = new Path(src);
+			
+			this.directory = new Path(directory);
+		} catch(e) {
+			throw(e);
+		}
 	}
 
 	toString() {
@@ -394,8 +431,12 @@ export class Sources {
 	_cache = null;
 
 	constructor({path} = {}) {
-		if(path)
-			this.path = new Path(path);
+		try {
+			if(path)
+				this.path = new Path(path);
+		} catch(e) {
+			throw(e);
+		}
 	}
 
 	include(values) {

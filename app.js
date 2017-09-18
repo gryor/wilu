@@ -184,23 +184,35 @@ var Path = exports.Path = function () {
 	}, {
 		key: 'join',
 		value: function join() {
-			return new (Function.prototype.bind.apply(Path, [null].concat([this.current], Array.prototype.slice.call(arguments))))();
+			try {
+				return new (Function.prototype.bind.apply(Path, [null].concat([this.current], Array.prototype.slice.call(arguments))))();
+			} catch (e) {
+				throw e;
+			}
 		}
 	}, {
 		key: 'joinEach',
 		value: function joinEach(paths) {
 			var _this = this;
 
-			if (!(paths instanceof Set)) paths = new Set(paths);
+			try {
+				if (!(paths instanceof Set)) paths = new Set(paths);
 
-			paths = [].concat(_toConsumableArray(paths)).map(function (e) {
-				return _this.join(e);
-			});
+				paths = [].concat(_toConsumableArray(paths)).map(function (e) {
+					return _this.join(e);
+				});
+			} catch (e) {
+				throw e;
+			}
 		}
 	}, {
 		key: 'absolute',
 		value: function absolute() {
-			return new Path(_path2.default.resolve(this.current));
+			try {
+				return new Path(_path2.default.resolve(this.current));
+			} catch (e) {
+				throw e;
+			}
 		}
 	}, {
 		key: 'isAbsolute',
@@ -210,17 +222,29 @@ var Path = exports.Path = function () {
 	}, {
 		key: 'relative',
 		value: function relative(to) {
-			return new Path(_path2.default.relative(this.current, to.toString()));
+			try {
+				return new Path(_path2.default.relative(this.current, to.toString()));
+			} catch (e) {
+				throw e;
+			}
 		}
 	}, {
 		key: 'normalize',
 		value: function normalize() {
-			return new Path(_path2.default.normalize(this.current));
+			try {
+				return new Path(_path2.default.normalize(this.current));
+			} catch (e) {
+				throw e;
+			}
 		}
 	}, {
 		key: 'dirname',
 		value: function dirname() {
-			return new Path(_path2.default.dirname(this.current));
+			try {
+				return new Path(_path2.default.dirname(this.current));
+			} catch (e) {
+				throw e;
+			}
 		}
 	}, {
 		key: 'basename',
@@ -241,13 +265,21 @@ var Paths = exports.Paths = function () {
 	function Paths() {
 		_classCallCheck(this, Paths);
 
-		this.home = new Path(_path2.default.relative('.', _path2.default.dirname(module.parent ? module.parent.filename : module.filename)));
+		try {
+			this.home = new Path(_path2.default.relative('.', _path2.default.dirname(module.parent ? module.parent.filename : module.filename)));
+		} catch (e) {
+			throw e;
+		}
 	}
 
 	_createClass(Paths, [{
 		key: 'module',
 		value: function module(name) {
-			return this.home.relative(_path2.default.dirname(require.resolve(name)));
+			try {
+				return this.home.relative(_path2.default.dirname(require.resolve(name)));
+			} catch (e) {
+				throw e;
+			}
 		}
 	}]);
 
@@ -410,10 +442,13 @@ var CompileRule = exports.CompileRule = function () {
 		this.targets = new Set();
 		this.commands = new Set();
 
-		if (extension) this.extension = extension;
+		try {
+			if (extension) this.extension = extension;else this.src = new Path(src);
 
-		this.directory = new Path(directory);
-		this.src = new Path(src);
+			this.directory = new Path(directory);
+		} catch (e) {
+			throw e;
+		}
 	}
 
 	_createClass(CompileRule, [{
@@ -530,7 +565,11 @@ var Sources = exports.Sources = function () {
 		this.path = undefined;
 		this._cache = null;
 
-		if (path) this.path = new Path(path);
+		try {
+			if (path) this.path = new Path(path);
+		} catch (e) {
+			throw e;
+		}
 	}
 
 	_createClass(Sources, [{
