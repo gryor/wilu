@@ -2,10 +2,9 @@
   "name": "wilu",
   "version": "0.0.41",
   "description": "",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "babel": "babel index.js -o app.js",
     "up": "npm version patch; git push; npm publish"
   },
   "author": "Wilhelm Matilainen",
@@ -22,15 +21,6 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wilhelmmatilainen/wilu.git"
-  },
-  "babel": {
-    "presets": [
-      "es2015",
-      "stage-0"
-    ],
-    "plugins": [
-      "transform-class-properties"
-    ]
   },
   "dependencies": {
     "debug": "^2.6.8",
@@ -160,10 +150,6 @@
     }
   },
   "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-plugin-transform-class-properties": "^6.6.0",
-    "babel-preset-es2015": "^6.6.0",
-    "babel-preset-stage-0": "^6.5.0",
     "native-nao": "0.0.4"
   }
 }

@@ -1,8 +1,8 @@
-import debug from 'debug';
-import npath from 'path';
-import glob from 'glob';
-import minimatch from 'minimatch';
-import fs from 'fs';
+const debug = require('debug');
+const npath = require('path');
+const glob = require('glob');
+const minimatch = require('minimatch');
+const fs = require('fs');
 
 let log = debug('wilu');
 
@@ -112,11 +112,11 @@ function combine(parent, childs) {
 	}
 }
 
-export class Path {
-	current = '';
-
+class Path {
 	constructor() {
 		try {
+			this.current = '';
+
 			for(let i = 0; i <  arguments.length; i++) {
 				if(arguments[i] === undefined)
 					throw new Error('undefined path');
@@ -230,7 +230,7 @@ export class Path {
 	}
 }
 
-export class Paths {
+class Paths {
 	constructor() {
 		try {
 			this.home = new Path(npath.relative('.', npath.dirname(module.parent ? module.parent.filename : module.filename)));
@@ -250,12 +250,12 @@ export class Paths {
 
 let paths = new Paths();
 
-export class Version {
-	major = 0;
-	minor = 0;
-	patch = 1;
-
+class Version {
 	constructor(version) {
+		this.major = 0;
+		this.minor = 0;
+		this.patch = 1;
+
 		if(version)
 			[this.major, this.minor, this.patch] = version.split('.');
 	}
@@ -265,26 +265,14 @@ export class Version {
 	}
 }
 
-export class Options {
-	list = new Set();
-	raw = new Set();
-	preline = '';
-	prefix = '';
-	suffix = '';
-	join = ' ';
-
+class Options {
 	constructor({preline, prefix, suffix, join} = {}) {
-		if(prefix)
-			this.prefix = prefix;
-
-		if(suffix)
-			this.suffix = suffix;
-
-		if(join)
-			this.join = join;
-
-		if(preline)
-			this.preline = preline;
+		this.list = new Set();
+		this.raw = new Set();
+		this.preline = preline || '';
+		this.prefix = prefix || '';
+		this.suffix = suffix || '';
+		this.join = join || ' ';
 
 		if(preline && join === undefined)
 			this.join = ',';
@@ -326,13 +314,10 @@ export class Options {
 	}
 }
 
-export class Tool {
-	name = '';
-	options = new Set();
-
+class Tool {
 	constructor({name, toolset} = {}) {
-		if(name)
-			this.name = name;
+		this.options = new Set();
+		this.name = name || '';
 
 		if(toolset)
 			this.name = toolset + '-' + name;
@@ -351,12 +336,12 @@ export class Tool {
 	}
 }
 
-export class CompileRule {
-	targets = new Set();
-	commands = new Set();
-
+class CompileRule {
 	constructor({extension, directory, src, updirs} = {}) {
 		try {
+			this.targets = new Set();
+			this.commands = new Set();
+
 			if(extension)
 				this.extension = extension;
 			else
@@ -390,14 +375,11 @@ export class CompileRule {
 	}
 }
 
-export class LinkRule {
-	name = '';
-	depends = new Set();
-	commands = new Set();
-
+class LinkRule {
 	constructor({name} = {}) {
-		if(name)
-			this.name = name;
+		this.depends = new Set();
+		this.commands = new Set();
+		this.name = name || '';
 	}
 
 	toString() {
@@ -421,8 +403,10 @@ export class LinkRule {
 	}
 }
 
-export class MakeVariables {
-	list = new Map();
+class MakeVariables {
+	constructor() {
+		this.list = new Map();
+	}
 
 	toString() {
 		try {
@@ -445,15 +429,14 @@ export class MakeVariables {
 	}
 }
 
-export class Sources {
-	includes = new Set();
-	excludes = new Set();
-	path = undefined;
-	updirs = '';
-	_cache = null;
-
+class Sources {
 	constructor({path} = {}) {
 		try {
+			this.includes = new Set();
+			this.excludes = new Set();
+			this.updirs = '';
+			this._cache = null;
+
 			if(path) {
 				this.path = new Path(path);
 			}
@@ -544,42 +527,44 @@ export class Sources {
 	}
 }
 
-export class Target {
-	target = '';
-	name = '';
-	libname = '';
-	version = new Version('0.0.1');
-	library = false;
-	shared = false;
-	directories = {
-		base: 'build',
-		output: 'bin',
-		objects: 'obj'
-	};
-	options = {
-		compiler: new Map(),
-		assembler: new Options({preline: '-Wa,', prefix: '-'}),
-		linker: new Options({preline: '-Wl,', prefix: '-'}),
-		scripts: new Options({prefix: '-T'}),
-		machine: new Options({prefix: '-m'}),
-		definitions: new Options({prefix: '-D'}),
-		libraries: {
-			static: new Options({prefix: '-l:lib', suffix: '.a'}),
-			shared: new Options({prefix: '-l:lib', suffix: '.so'})
-		},
-		search: {
-			includes: new Options({prefix: '-I'}),
-			libraries: new Options({prefix: '-L'}),
-			scripts: new Options({preline: '-Wl,', prefix: '-L'})
-		}
-	};
-	extensions = new Map();
-	depends = new Set();
-	sources = new Sources();
-	tools = new Map();
-	linker = null;
-	rules = new Set();
-	objects = new Set();
+class Target {
+	constructor() {
+		this.target = '';
+		this.name = '';
+		this.libname = '';
+		this.version = new Version('0.0.1');
+		this.library = false;
+		this.shared = false;
+		this.directories = {
+			base: 'build',
+			output: 'bin',
+			objects: 'obj'
+		};
+		this.options = {
+			compiler: new Map(),
+			assembler: new Options({preline: '-Wa,', prefix: '-'}),
+			linker: new Options({preline: '-Wl,', prefix: '-'}),
+			scripts: new Options({prefix: '-T'}),
+			machine: new Options({prefix: '-m'}),
+			definitions: new Options({prefix: '-D'}),
+			libraries: {
+				static: new Options({prefix: '-l:lib', suffix: '.a'}),
+				shared: new Options({prefix: '-l:lib', suffix: '.so'})
+			},
+			search: {
+				includes: new Options({prefix: '-I'}),
+				libraries: new Options({prefix: '-L'}),
+				scripts: new Options({preline: '-Wl,', prefix: '-L'})
+			}
+		};
+		this.extensions = new Map();
+		this.depends = new Set();
+		this.sources = new Sources();
+		this.tools = new Map();
+		this.linker = null;
+		this.rules = new Set();
+		this.objects = new Set();
+	}
 
 	async parse(name, target) {
 		try {
@@ -863,9 +848,11 @@ export class Target {
 	}
 }
 
-export class Makefile {
-	targets = new Set();
-	imported = new Set();
+class Makefile {
+	constructor() {
+		this.targets = new Set();
+		this.imported = new Set();
+	}
 
 	async load(build) {
 		try {
@@ -974,7 +961,7 @@ export class Makefile {
 	}
 }
 
-export default async function makefile(build) {
+module.exports = async function makefile(build) {
 	try {
 		let makefile = new Makefile();
 		await writeFile('makefile', await makefile.parse(build));
@@ -989,7 +976,7 @@ if(require.main === module)
 			let make = new Makefile();
 			let out = await make.parse(require('./package.json').build);
 			log(out);
-			require('fs').writeFile('makefile', out);
+			await writeFile('makefile', out);
 		} catch(e) {
 			log(e);
 			throw e;
