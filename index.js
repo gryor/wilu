@@ -617,27 +617,6 @@ class Target {
 
 				this.options.assembler.append(target.options.assembler);
 				this.options.linker.append(target.options.linker);
-				this.options.scripts.append(target.scripts);
-				this.options.machine.append(target.machine);
-				this.options.definitions.append(target.definitions);
-
-				if(target.libraries) {
-					this.options.libraries.static.append(target.libraries.static);
-					this.options.libraries.shared.append(target.libraries.shared);
-				}
-
-				if(target.search) {
-					if(target.home) {
-						for(let search in target.search) {
-							this.options.search[search].append(target.search[search]
-							.map((p) => (npath.isAbsolute(p) ? p : target.home.join(p))));
-						}
-					}
-
-					this.options.search.includes.append(target.search.includes);
-					this.options.search.libraries.append(target.search.libraries);
-					this.options.search.scripts.append(target.search.scripts);
-				}
 
 				if(target.options.raw) {
 					if(target.options.raw.linker) {
@@ -645,6 +624,28 @@ class Target {
 							this.options.linker.raw.add(opt);
 					}
 				}
+			}
+
+			this.options.scripts.append(target.scripts);
+			this.options.machine.append(target.machine);
+			this.options.definitions.append(target.definitions);
+
+			if(target.libraries) {
+				this.options.libraries.static.append(target.libraries.static);
+				this.options.libraries.shared.append(target.libraries.shared);
+			}
+
+			if(target.search) {
+				if(target.home) {
+					for(let search in target.search) {
+						this.options.search[search].append(target.search[search]
+						.map((p) => (npath.isAbsolute(p) ? p : target.home.join(p))));
+					}
+				}
+
+				this.options.search.includes.append(target.search.includes);
+				this.options.search.libraries.append(target.search.libraries);
+				this.options.search.scripts.append(target.search.scripts);
 			}
 
 			target.extensions = target.extensions || {};
