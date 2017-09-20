@@ -12,23 +12,26 @@ Wilu generates makefiles without additional dependencies.
 
 make.js:
 ```js
-import wilu from 'wilu';
-import * as pkg from './package.json';
+const wilu = require('wilu');
+const pkg = require('./package.json');
 
 (async function () {
 	try {
-		pkg.build.name = pkg.name;
-		pkg.build.version = pkg.version;
+		pkg.build = pkg.build || {};
+		Object.assign(pkg.build, {
+			name: pkg.name,
+			version: pkg.version
+		});
 		await wilu(pkg.build);
 	} catch(e) {
-		throw e;
+		console.error(e);
 	}
 })();
 ```
 
 ```sh
 npm i --save-dev wilu
-babel-node make.js
+node make.js
 ```
 
 Now you have `makefile` in your current directory.
