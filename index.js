@@ -599,7 +599,7 @@ class Target {
 			Object.assign(this.directories, target.directories);
 
 			this.directories.base = new Path(this.directories.base);
-			this.directories.base.add(this.name);
+			this.directories.base.add(target.modname);
 
 			for(let key in this.directories) {
 				if(key === 'base')
@@ -662,16 +662,7 @@ class Target {
 				this.depends = new Set(target.depends);
 
 				if(target.home) {
-					let imports = new Set(target.import || []);
-
-					this.depends = new Set([...this.depends].map(function (d) {
-						let modname = d.split('_')[0];
-
-						if(modname.length && imports.has(modname))
-							return d;
-
-						return `${target.modname}_${d}`;
-					}));
+					this.depends = new Set([...this.depends].map(d => (d.includes('_') ? d : `${target.modname}_${d}`)));
 				}
 			}
 
@@ -896,6 +887,10 @@ class Makefile {
 
 					for(let t in mod) {
 						let modtargetname = modname + '_' + t;
+
+						if(mod[t].depends)
+							mod[t].depends = mod[t].depends.map((d) => (d.includes('_') ? d : modname + '_' + d));
+
 						build[modtargetname] = mod[t];
 					}
 				}
@@ -930,7 +925,7 @@ class Makefile {
 				if(build[name].variables)
 					makeVariables.append(build[name].variables);
 
-				let target = new Target;
+				let target = new Target();
 				this.targets.add(target);
 				calls.push(target.parse(name, build[name]));
 			}
@@ -962,24 +957,13 @@ class Makefile {
 	}
 }
 
-module.exports = async function makefile(build) {
+module.exports = async function makefile(pkg) {
 	try {
+		pkg.build = pkg.build || {};
+		Object.assign(pkg.build, {name: pkg.name, modname: pkg.name, version: pkg.version});
 		let makefile = new Makefile();
-		await writeFile('makefile', await makefile.parse(build));
+		await writeFile('makefile', await makefile.parse(pkg.build));
 	} catch(e) {
 		throw e;
 	}
 }
-
-if(require.main === module)
-	(async function () {
-		try {
-			let make = new Makefile();
-			let out = await make.parse(require('./package.json').build);
-			log(out);
-			await writeFile('makefile', out);
-		} catch(e) {
-			log(e);
-			throw e;
-		}
-	})();
