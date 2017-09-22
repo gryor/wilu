@@ -997,6 +997,10 @@ module.exports = async function makefile(pkg) {
   try {
     pkg.build = pkg.build || {};
     Object.assign(pkg.build, {name: pkg.name, modname: pkg.name, version: pkg.version});
+
+    if(pkg.build['+'] === undefined)
+      pkg.build['+'] = {all: {}};
+
     let makefile = new Makefile();
     await writeFile('makefile', await makefile.parse(pkg.build));
   } catch(e) {
