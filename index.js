@@ -535,6 +535,7 @@ class Target {
 		this.version = new Version('0.0.1');
 		this.library = false;
 		this.shared = false;
+    this.node = false;
 		this.directories = {
 			base: 'build',
 			output: 'bin',
@@ -576,6 +577,37 @@ class Target {
 			if(target.version)
 				this.version = new Version(target.version);
 
+      if(target.node) {
+        this.node = true;
+        target.library = true;
+        target.shared = true;
+
+        target.libraries = target.libraries || {};
+        target.libraries.shared = new Set(target.libraries.shared || []);
+        target.libraries.shared.add('v8');
+
+        target.definitions = new Set(target.definitions || []);
+        target.definitions.add('PIC');
+        target.definitions.add('_LARGEFILE_SOURCE');
+        target.definitions.add('_FILE_OFFSET_BITS=64');
+        target.definitions.add('_GNU_SOURCE');
+        target.definitions.add('EV_MULTIPLICITY=0');
+
+        target.search = target.search || {};
+        target.search.includes = new Set(target.search.includes || []);
+        target.search.includes.add('/usr/include/node');
+        target.search.includes.add('node_modules');
+        target.directories = target.directories || {};
+
+        if(target.directories.output === undefined)
+          target.directories.output = 'lib';
+
+        target.sources = target.sources || {};
+
+        if(target.sources.include === undefined)
+          target.sources.include = ['*.c'];
+      }
+
 			if(target.library) {
 				this.library = true;
 				this.shared = !!target.shared;
@@ -584,7 +616,11 @@ class Target {
 				this.options.compiler.get('all').append(['fPIC']);
 
 				if(this.shared) {
-					this.libname = `lib${this.name}.so.${this.version}`;
+          if(this.node)
+					  this.libname = `${this.name}.node`;
+          else
+					  this.libname = `lib${this.name}.so.${this.version}`;
+
 					this.options.linker.raw.add('-shared');
 					this.options.linker.raw.add('-fPIC');
 					this.options.linker.list.add(`soname,lib${this.name}.so.${this.version.major}`);
@@ -774,7 +810,7 @@ class Target {
 					.join(' '));
 				}
 
-				if(this.library && this.shared) {
+				if(this.library && this.shared && !this.node) {
 					link.commands.add([
 						'ln -sf',
 						this.libname,

@@ -155,6 +155,7 @@ The make targets are `release` and `debug`.
 * library: a boolean, which turns the target into a static library. The output name is changed into 'libname.a'
 * shared: a boolean, which turns a library target into a shared library. The output name is changed into 'libname.so.version'
   and symbolic links will be generated.
+* node: a boolean, which turns the target into a node.js native addon
 * variables: object of variables where the keys are the variable names. Each property is turned into 'key= value'. This allows to
   specify a modifier to the equal sign, e.g. ':' or '?'.
 * commands: array of commands to be executed after linking
