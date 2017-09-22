@@ -863,7 +863,8 @@ class Target {
 
       if(files.size || this.options.libraries.static.list.size) {
         let clean = new LinkRule({name: 'clean-' + this.target});
-        clean.commands.add('rm -rf ' + this.directories.output);
+        clean.commands.add('rm -rf ' + this.directories.objects.join(this.target));
+        clean.commands.add('rmdir --ignore-fail-on-non-empty ' + this.directories.objects);
         this.rules.add(clean);
       }
 
